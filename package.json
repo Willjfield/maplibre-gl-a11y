@@ -1,0 +1,53 @@
+{
+  "name": "@willjfield/maplibre-gl-a11y",
+  "version": "0.1.0",
+  "description": "A plugin for maplibre-gl-js focused on accessibility tooling.",
+  "main": "./index.js",
+  "module": "./index.js",
+  "browser": "./dist/maplibre-gl-a11y.esm.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "browser": "./dist/maplibre-gl-a11y.esm.js",
+      "import": "./index.js",
+      "default": "./index.js"
+    },
+    "./cli": "./bin/style-analyzer.js"
+  },
+  "bin": {
+    "maplibre-gl-a11y-cli": "./bin/style-analyzer.js"
+  },
+  "files": [
+    "index.js",
+    "maplibre-gl-a11y.css",
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "demo": "npm run build && vite serve ./demo",
+    "build": "rollup -c && cp ./maplibre-gl-a11y.css ./dist/maplibre-gl-a11y.css",
+    "build:watch": "rollup -c -w",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Willjfield/maplibre-gl-a11y.git"
+  },
+  "author": "willjfield",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/Willjfield/maplibre-gl-a11y/issues"
+  },
+  "homepage": "https://github.com/Willjfield/maplibre-gl-a11y#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "maplibre-gl": "^5.4.0",
+    "rollup": "^4.52.5",
+    "vite": "^6.3.1"
+  }
+}
