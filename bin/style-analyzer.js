@@ -38,6 +38,10 @@ function parseArgs(argv) {
       args.stylePath = arg;
       continue;
     }
+    if (!args.configPath) {
+      args.configPath = arg;
+      continue;
+    }
   }
 
   return args;
@@ -353,7 +357,7 @@ async function main() {
 
   if (!inputPath) {
     throw new Error(
-      'Please provide a path to a style JSON file.\nUsage: maplibre-gl-a11y-cli ./style.json [--config .maplibre-gl-a11y.config.json] [--non-interactive]'
+      'Please provide a path to a style JSON file.\nUsage: maplibre-gl-a11y-cli ./style.json [./path/to/config.json] [--config .maplibre-gl-a11y.config.json] [--non-interactive]'
     );
   }
 

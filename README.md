@@ -35,6 +35,14 @@ cp ./.maplibre-gl-a11y.config.example.json ./.maplibre-gl-a11y.config.json
 node ./bin/style-analyzer.js ./path/to/style.json
 ```
 
+You can also pass config explicitly (recommended when installed via npm in another project):
+
+```bash
+maplibre-gl-a11y-cli ./path/to/style.json ./path/to/.maplibre-gl-a11y.config.json
+# or
+maplibre-gl-a11y-cli ./path/to/style.json --config ./path/to/.maplibre-gl-a11y.config.json
+```
+
 The CLI now:
 
 - reads the input style
@@ -50,6 +58,14 @@ node ./bin/style-analyzer.js ./path/to/style.json --non-interactive
 ```
 
 This writes `a11y_[name].json` without applying suggestions (baseline copy with audit output in terminal).
+
+### Add npm script in consuming project
+
+Packages generally should not auto-edit a consumer's `package.json` on install. Instead, from the consuming project root:
+
+```bash
+npm pkg set scripts.a11y-audit="maplibre-gl-a11y-cli ./style.json ./path/to/.maplibre-gl-a11y.config.json"
+```
 
 ## Scripts
 
