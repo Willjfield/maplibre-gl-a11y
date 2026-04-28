@@ -11,5 +11,7 @@ const map = new maplibregl.Map({
 });
 
 map.on('load', () => {
-  map.addAccessability();
+  map.addAccessability({ layers: [
+    { id: 'countries-fill', properties: ['NAME'] }
+  ] });
 });
