@@ -1,0 +1,18 @@
+{
+  "provider": "anthropic",
+  "anthropic": {
+    "apiKey": "your-anthropic-api-key",
+    "model": "claude-3-5-haiku-latest",
+    "apiUrl": "https://api.anthropic.com/v1/messages"
+  },
+  "openai": {
+    "apiKey": "your-openai-api-key",
+    "model": "gpt-4o-mini",
+    "apiUrl": "https://api.openai.com/v1/chat/completions"
+  },
+  "gemini": {
+    "apiKey": "your-gemini-api-key",
+    "model": "gemini-1.5-pro",
+    "apiUrl": "https://generativelanguage.googleapis.com/v1beta/models"
+  }
+}

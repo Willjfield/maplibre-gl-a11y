@@ -30,16 +30,26 @@ Both methods currently log `hello world`.
 ## CLI usage
 
 ```bash
+cp ./.maplibre-gl-a11y.config.example.json ./.maplibre-gl-a11y.config.json
+# edit API keys/provider in .maplibre-gl-a11y.config.json
 node ./bin/style-analyzer.js ./path/to/style.json
 ```
 
-If the file is readable, it logs:
+The CLI now:
 
-```text
-Read style.json successfully
+- reads the input style
+- sends a compact style snapshot to your configured provider (`anthropic`, `openai`, or `gemini`) for WCAG-focused audit
+- requests suggested RFC6902 JSON patch edits with WCAG citations
+- lets you apply `all`, `none`, or a comma-separated subset interactively
+- writes output to `a11y_[name].json` in the same folder as the input style
+
+### Non-interactive mode
+
+```bash
+node ./bin/style-analyzer.js ./path/to/style.json --non-interactive
 ```
 
-Otherwise it throws an error.
+This writes `a11y_[name].json` without applying suggestions (baseline copy with audit output in terminal).
 
 ## Scripts
 
