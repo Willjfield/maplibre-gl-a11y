@@ -11,7 +11,8 @@ const map = new maplibregl.Map({
 });
 
 map.on('load', () => {
-  map.addAccessability({ layers: [
-    { id: 'countries-fill', properties: ['NAME'] }
-  ] });
+  map.addAccessability({
+    accessibleStyle: 'https://demotiles.maplibre.org/style.json',
+    layers: [{ id: 'countries-fill', properties: ['NAME'] }]
+  });
 });

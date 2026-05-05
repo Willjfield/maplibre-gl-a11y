@@ -1,7 +1,12 @@
 const ICON_PATH_D =
   'M600,0C268.629,0,0,268.629,0,600s268.629,600,600,600s600-268.629,600-600S931.371,0,600,0z M600,80.167c287.105,0,519.833,232.727,519.833,519.833c0,287.105-232.727,519.871-519.833,519.871c-287.106,0-519.871-232.765-519.871-519.871S312.894,80.167,600,80.167z M922.375,541.163c17.269,16.33,16.732,39.747,3.838,56.29c-15.771,16.638-40.629,17.347-56.29,3.838c-48.914-44.386-102.442-85.918-152.237-131.77c-0.152,1.96-13.502-8.813-19.189-8.956c-5.118,0-7.677,5.971-7.677,17.91c2.512,49.275-1.148,101.299,4.478,149.04c2.133,17.484,3.198,27.506,3.198,30.064l57.569,327.505c3.299,30.075-13.141,52.539-39.658,57.569c-26.557,7.224-53.846-15.676-57.569-39.658c0,0-46.445-264.445-47.335-268.657s-2.46-27.537-11.514-28.784c-11.634,4.222-10.286,23.812-11.516,28.784c-1.229,4.972-47.335,268.657-47.335,268.657c-7.78,27.743-31.696,44.14-57.568,39.658c-29.562-7.392-44.012-31.018-39.658-57.569l57.569-328.784c8.5-60.769,6.396-115.129,6.396-176.546c0-11.944-2.345-18.128-7.036-18.55c-4.69-0.427-10.874,2.771-18.55,9.595L330.051,601.29c-17.788,13.255-42.655,11.046-56.29-3.838c-13.784-19.696-12.902-41.007,3.838-56.29l199.573-176.546c9.384-5.972,18.126-10.021,26.228-12.154c8.104-2.132,18.125-3.198,30.062-3.198h133.05c11.939,0,21.962,1.066,30.063,3.198c8.103,2.133,16.845,6.61,26.227,13.433C786.344,421.632,853.806,481.598,922.375,541.163L922.375,541.163z M688.031,238.326c0,48.328-39.178,87.505-87.504,87.505c-48.328,0-87.506-39.177-87.506-87.505c0-48.327,39.178-87.504,87.506-87.504C648.854,150.821,688.031,189.999,688.031,238.326z';
+const GRID_ICON_PATH_D = 'M4 4h5v5H4V4Zm0 7h5v5H4v-5Zm0 7h5v5H4v-5Zm7-14h5v5h-5V4Zm0 7h5v5h-5v-5Zm0 7h5v5h-5v-5Zm7-14h5v5h-5V4Zm0 7h5v5h-5v-5Zm0 7h5v5h-5v-5Z';
+const MAP_ICON_PATH_D = 'M3 6.5 8.5 4l7 2.5L21 4v15.5L15.5 22l-7-2.5L3 22V6.5Zm2 2.7v9.9l2.5-1V8.1L5 9.2Zm4.5-1.1v10l5 1.8V9.9l-5-1.8Zm7 .1v10l2.5-1V7.2l-2.5 1Z';
+const SPEAKER_ICON_PATH_D = 'M3 10v4h4l5 4V6L7 10H3Zm13.5 2a3.5 3.5 0 0 0-2-3.16v6.32a3.5 3.5 0 0 0 2-3.16Zm0-7.5v2.07a7 7 0 0 1 0 10.86V19.5a9 9 0 0 0 0-15Z';
 
 const DEFAULT_CELL_SIZE = 48;
+const HOVER_ANNOUNCE_DEBOUNCE_MS = 700;
+const AUDIO_INSPECTION_BOX_SIZE = 44;
 
 function getFeatureLabel(feature) {
   if (!feature || !feature.properties) {
@@ -73,19 +78,59 @@ function ensureControlStyles() {
   document.head.appendChild(stylesheetLink);
 }
 
+function setMouseInteractionEnabled(map, enabled) {
+  const handlers = [
+    map.dragPan,
+    map.scrollZoom,
+    map.boxZoom,
+    map.dragRotate,
+    map.doubleClickZoom,
+    map.touchZoomRotate,
+    map.touchPitch
+  ];
+
+  for (const handler of handlers) {
+    if (!handler) {
+      continue;
+    }
+    if (enabled) {
+      handler.enable();
+    } else {
+      handler.disable();
+    }
+  }
+}
+
+function createIcon(pathDefinition, viewBox = '0 0 24 24') {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', viewBox);
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', pathDefinition);
+  svg.appendChild(path);
+  return svg;
+}
+
 export default function createControl(map, options = {}) {
   const cellSize = Math.max(8, Number(options.cellSize) || DEFAULT_CELL_SIZE);
   const { targetLayers, layerProperties } = normalizeLayerConfig(options);
   const showGridBorder = options.showGridBorder !== false;
   const borderColor = options.borderColor || 'rgba(56, 135, 190, 0.6)';
   const borderWidth = Number.isFinite(options.borderWidth) ? options.borderWidth : 1;
+  const accessibleStyle = options.accessibleStyle;
+  const speechEnabled = options.speechEnabled !== false;
 
   let controlContainer;
   let controlButton;
+  let modePanel;
+  let gridModeButton;
+  let styleModeButton;
+  let audioModeButton;
   let overlayContainer;
   let idleHandler;
   let resizeHandler;
-  let isGridVisible = false;
+  let activeMode = 'off';
+  let isPanelOpen = false;
   let cells = [];
   let gridColumns = 0;
   let gridRows = 0;
@@ -93,6 +138,12 @@ export default function createControl(map, options = {}) {
   let keyboardHelpElementId;
   let srAnnouncementElement;
   let reenableNativeKeyboard = false;
+  let initialStyle = options.defaultStyle || map.getStyle();
+  let hasSwitchedToAccessibleStyle = false;
+  let audioHoverTimeout;
+  let audioLastAnnouncement = '';
+  let magnifierElement;
+  let togglePanelHandler;
 
   function announceKeyboardHelp() {
     if (!srAnnouncementElement) {
@@ -103,6 +154,17 @@ export default function createControl(map, options = {}) {
     window.requestAnimationFrame(() => {
       srAnnouncementElement.textContent =
         'Accessibility grid active. Keyboard help: Arrow keys move cells and pan map at edges. Home and End jump row start and end. Press C to center map on selected cell. Press Z to zoom in, Shift Z to zoom out. Press H to hear this help again. Press Escape to return to the accessibility button.';
+    });
+  }
+
+  function announce(message, assertive = false) {
+    if (!srAnnouncementElement) {
+      return;
+    }
+    srAnnouncementElement.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+    srAnnouncementElement.textContent = '';
+    window.requestAnimationFrame(() => {
+      srAnnouncementElement.textContent = message;
     });
   }
 
@@ -224,6 +286,55 @@ export default function createControl(map, options = {}) {
       const features = map.queryRenderedFeatures(cell.bbox, queryOptions);
       updateCellAccessibility(cell, features);
     }
+  }
+
+  function queryFeaturesAtPoint(point) {
+    const queryOptions = targetLayers.length > 0 ? { layers: targetLayers } : undefined;
+    const features = map.queryRenderedFeatures(point, queryOptions);
+    return dedupeFeatures(features);
+  }
+
+  function queryFeaturesInInspectionBox(point) {
+    const queryOptions = targetLayers.length > 0 ? { layers: targetLayers } : undefined;
+    const halfSize = AUDIO_INSPECTION_BOX_SIZE / 2;
+    const bbox = [
+      [point.x - halfSize, point.y - halfSize],
+      [point.x + halfSize, point.y + halfSize]
+    ];
+    const features = map.queryRenderedFeatures(bbox, queryOptions);
+    return dedupeFeatures(features);
+  }
+
+  function buildPointAnnouncement(features) {
+    if (!features || features.length === 0) {
+      return 'No features at pointer location.';
+    }
+    const topFeatures = features.slice(0, 3);
+    const featureText = topFeatures.map((feature) => {
+      const layerName = feature.layer?.id || 'unknown-layer';
+      return `${layerName}: ${buildFeatureSummary(feature)}`;
+    });
+    const suffix = features.length > topFeatures.length ? ` plus ${features.length - topFeatures.length} more` : '';
+    return `${featureText.join('; ')}${suffix}`;
+  }
+
+  function buildInspectionBoxAnnouncement(features) {
+    if (!features || features.length === 0) {
+      return 'No features inside the inspection square.';
+    }
+    const details = features.map((feature, index) => {
+      const layerName = feature.layer?.id || 'unknown-layer';
+      return `Feature ${index + 1} in ${layerName}: ${buildFeatureSummary(feature)}`;
+    });
+    return `${features.length} features in inspection square. ${details.join('; ')}`;
+  }
+
+  function speak(message) {
+    if (!speechEnabled || typeof window === 'undefined' || typeof window.SpeechSynthesisUtterance !== 'function') {
+      return;
+    }
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(message));
   }
 
   function setActiveCell(cell, focusCell = false) {
@@ -482,25 +593,16 @@ export default function createControl(map, options = {}) {
     overlayContainer = undefined;
     cells = [];
 
-    isGridVisible = false;
     if (reenableNativeKeyboard && map.keyboard) {
       map.keyboard.enable();
       reenableNativeKeyboard = false;
-    }
-    if (controlButton) {
-      controlButton.setAttribute('aria-pressed', 'false');
     }
     if (keyboardHelpElement) {
       keyboardHelpElement.classList.add('maplibre-gl-a11y-keyboard-help-hidden');
     }
   }
 
-  function toggleGridOverlay() {
-    if (isGridVisible) {
-      destroyGridOverlay();
-      return;
-    }
-
+  function activateGridOverlay() {
     overlayContainer = document.createElement('div');
     overlayContainer.className = 'maplibre-gl-a11y-grid-overlay';
     overlayContainer.setAttribute('role', 'grid');
@@ -510,12 +612,11 @@ export default function createControl(map, options = {}) {
     }
     map.getCanvasContainer().appendChild(overlayContainer);
 
-    isGridVisible = true;
+    setMouseInteractionEnabled(map, false);
     if (map.keyboard && map.keyboard.isEnabled()) {
       map.keyboard.disable();
       reenableNativeKeyboard = true;
     }
-    controlButton.setAttribute('aria-pressed', 'true');
     if (keyboardHelpElement) {
       keyboardHelpElement.classList.remove('maplibre-gl-a11y-keyboard-help-hidden');
     }
@@ -524,6 +625,154 @@ export default function createControl(map, options = {}) {
     if (cells.length > 0) {
       setActiveCell(cells[0], true);
     }
+  }
+
+  function updateMagnifierPosition(point) {
+    if (!magnifierElement) {
+      return;
+    }
+    magnifierElement.style.left = `${point.x}px`;
+    magnifierElement.style.top = `${point.y}px`;
+  }
+
+  function createMagnifier() {
+    if (magnifierElement) {
+      return;
+    }
+    magnifierElement = document.createElement('div');
+    magnifierElement.className = 'maplibre-gl-a11y-magnifier';
+    map.getCanvasContainer().appendChild(magnifierElement);
+  }
+
+  function destroyMagnifier() {
+    if (magnifierElement && magnifierElement.parentNode) {
+      magnifierElement.parentNode.removeChild(magnifierElement);
+    }
+    magnifierElement = undefined;
+  }
+
+  function handleAudioPointerMove(event) {
+    updateMagnifierPosition(event.point);
+    if (audioHoverTimeout) {
+      window.clearTimeout(audioHoverTimeout);
+    }
+    audioHoverTimeout = window.setTimeout(() => {
+      const features = queryFeaturesAtPoint(event.point);
+      const message = buildPointAnnouncement(features);
+      if (message === audioLastAnnouncement) {
+        return;
+      }
+      audioLastAnnouncement = message;
+      announce(message, false);
+    }, HOVER_ANNOUNCE_DEBOUNCE_MS);
+  }
+
+  function handleAudioPointerClick(event) {
+    const features = queryFeaturesInInspectionBox(event.point);
+    const message = buildInspectionBoxAnnouncement(features);
+    announce(message, true);
+    speak(message);
+  }
+
+  function activateAudioExploreMode() {
+    setMouseInteractionEnabled(map, true);
+    createMagnifier();
+    map.on('mousemove', handleAudioPointerMove);
+    map.on('click', handleAudioPointerClick);
+    announce('Audio explore mode active. Move the mouse to hear summarized features. Click to announce details.', true);
+  }
+
+  function deactivateAudioExploreMode() {
+    if (audioHoverTimeout) {
+      window.clearTimeout(audioHoverTimeout);
+      audioHoverTimeout = undefined;
+    }
+    map.off('mousemove', handleAudioPointerMove);
+    map.off('click', handleAudioPointerClick);
+    audioLastAnnouncement = '';
+    destroyMagnifier();
+  }
+
+  function activateAccessibleStyleMode() {
+    if (!accessibleStyle) {
+      announce('Accessible map style is not configured for this control.', true);
+      return false;
+    }
+    map.setStyle(accessibleStyle);
+    hasSwitchedToAccessibleStyle = true;
+    announce('Accessible map style mode active.', true);
+    return true;
+  }
+
+  function deactivateAccessibleStyleMode() {
+    if (!hasSwitchedToAccessibleStyle) {
+      return;
+    }
+    map.setStyle(initialStyle);
+    hasSwitchedToAccessibleStyle = false;
+  }
+
+  function closeModePanel() {
+    if (!modePanel || !controlButton) {
+      return;
+    }
+    isPanelOpen = false;
+    modePanel.classList.add('maplibre-gl-a11y-mode-panel-hidden');
+    controlButton.setAttribute('aria-expanded', 'false');
+  }
+
+  function openModePanel() {
+    if (!modePanel || !controlButton) {
+      return;
+    }
+    isPanelOpen = true;
+    modePanel.classList.remove('maplibre-gl-a11y-mode-panel-hidden');
+    controlButton.setAttribute('aria-expanded', 'true');
+  }
+
+  function updateModeButtonState() {
+    if (gridModeButton) {
+      gridModeButton.setAttribute('aria-pressed', String(activeMode === 'grid'));
+    }
+    if (styleModeButton) {
+      styleModeButton.setAttribute('aria-pressed', String(activeMode === 'altStyle'));
+    }
+    if (audioModeButton) {
+      audioModeButton.setAttribute('aria-pressed', String(activeMode === 'audioExplore'));
+    }
+  }
+
+  function setMode(nextMode) {
+    if (activeMode === nextMode) {
+      nextMode = 'off';
+    }
+
+    if (activeMode === 'grid') {
+      destroyGridOverlay();
+    } else if (activeMode === 'altStyle') {
+      deactivateAccessibleStyleMode();
+    } else if (activeMode === 'audioExplore') {
+      deactivateAudioExploreMode();
+    }
+
+    activeMode = nextMode;
+
+    if (activeMode === 'grid') {
+      activateGridOverlay();
+      announce('Grid mode active. Map mouse interaction disabled.', true);
+    } else if (activeMode === 'altStyle') {
+      const styleActivated = activateAccessibleStyleMode();
+      if (!styleActivated) {
+        activeMode = 'off';
+      }
+    } else if (activeMode === 'audioExplore') {
+      activateAudioExploreMode();
+    } else {
+      setMouseInteractionEnabled(map, true);
+      announce('Accessibility mode cleared.', false);
+    }
+
+    updateModeButtonState();
   }
 
   return {
@@ -536,22 +785,55 @@ export default function createControl(map, options = {}) {
       controlButton = document.createElement('button');
       controlButton.type = 'button';
       controlButton.className = 'maplibre-gl-a11y-control-button';
-      controlButton.setAttribute('aria-label', 'Toggle accessibility feature grid');
-      controlButton.setAttribute('aria-pressed', 'false');
-      controlButton.title = 'Toggle accessibility feature grid';
-
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('viewBox', '0 0 1200 1200');
-      svg.setAttribute('aria-hidden', 'true');
-
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute('d', ICON_PATH_D);
-      svg.appendChild(path);
-
-      controlButton.appendChild(svg);
-      controlButton.addEventListener('click', toggleGridOverlay);
+      controlButton.setAttribute('aria-label', 'Open accessibility interaction modes');
+      controlButton.setAttribute('aria-expanded', 'false');
+      controlButton.setAttribute('aria-haspopup', 'true');
+      controlButton.title = 'Open accessibility interaction modes';
+      controlButton.appendChild(createIcon(ICON_PATH_D, '0 0 1200 1200'));
+      togglePanelHandler = () => {
+        if (isPanelOpen) {
+          closeModePanel();
+        } else {
+          openModePanel();
+        }
+      };
+      controlButton.addEventListener('click', togglePanelHandler);
 
       controlContainer.appendChild(controlButton);
+
+      modePanel = document.createElement('div');
+      modePanel.className = 'maplibre-gl-a11y-mode-panel maplibre-gl-a11y-mode-panel-hidden';
+      modePanel.setAttribute('role', 'group');
+      modePanel.setAttribute('aria-label', 'Accessibility interaction modes');
+
+      gridModeButton = document.createElement('button');
+      gridModeButton.type = 'button';
+      gridModeButton.className = 'maplibre-gl-a11y-mode-button';
+      gridModeButton.setAttribute('aria-label', 'Grid mode');
+      gridModeButton.title = 'Grid mode: use keyboard grid and disable map mouse interaction';
+      gridModeButton.appendChild(createIcon(GRID_ICON_PATH_D));
+      gridModeButton.addEventListener('click', () => setMode('grid'));
+
+      styleModeButton = document.createElement('button');
+      styleModeButton.type = 'button';
+      styleModeButton.className = 'maplibre-gl-a11y-mode-button';
+      styleModeButton.setAttribute('aria-label', 'Accessible style mode');
+      styleModeButton.title = 'Accessible style mode';
+      styleModeButton.appendChild(createIcon(MAP_ICON_PATH_D));
+      styleModeButton.addEventListener('click', () => setMode('altStyle'));
+
+      audioModeButton = document.createElement('button');
+      audioModeButton.type = 'button';
+      audioModeButton.className = 'maplibre-gl-a11y-mode-button';
+      audioModeButton.setAttribute('aria-label', 'Audio explore mode');
+      audioModeButton.title = 'Audio explore mode';
+      audioModeButton.appendChild(createIcon(SPEAKER_ICON_PATH_D));
+      audioModeButton.addEventListener('click', () => setMode('audioExplore'));
+
+      modePanel.appendChild(gridModeButton);
+      modePanel.appendChild(styleModeButton);
+      modePanel.appendChild(audioModeButton);
+      controlContainer.appendChild(modePanel);
 
       keyboardHelpElement = document.createElement('div');
       keyboardHelpElement.className = 'maplibre-gl-a11y-keyboard-help maplibre-gl-a11y-keyboard-help-hidden';
@@ -574,21 +856,27 @@ export default function createControl(map, options = {}) {
       srAnnouncementElement.setAttribute('aria-live', 'polite');
       srAnnouncementElement.setAttribute('aria-atomic', 'true');
       controlContainer.appendChild(srAnnouncementElement);
+      updateModeButtonState();
       return controlContainer;
     },
     onRemove() {
-      destroyGridOverlay();
+      setMode('off');
       if (controlButton) {
-        controlButton.removeEventListener('click', toggleGridOverlay);
+        controlButton.removeEventListener('click', togglePanelHandler);
       }
       if (controlContainer && controlContainer.parentNode) {
         controlContainer.parentNode.removeChild(controlContainer);
       }
       controlContainer = undefined;
       controlButton = undefined;
+      modePanel = undefined;
+      gridModeButton = undefined;
+      styleModeButton = undefined;
+      audioModeButton = undefined;
       keyboardHelpElement = undefined;
       keyboardHelpElementId = undefined;
       srAnnouncementElement = undefined;
+      togglePanelHandler = undefined;
     }
   };
 }
