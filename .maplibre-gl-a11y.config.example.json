@@ -2,7 +2,7 @@
   "provider": "anthropic",
   "anthropic": {
     "apiKey": "your-anthropic-api-key",
-    "model": "claude-3-5-haiku-latest",
+    "model": "claude-sonnet-4-6",
     "apiUrl": "https://api.anthropic.com/v1/messages"
   },
   "openai": {

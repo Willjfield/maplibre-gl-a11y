@@ -79,15 +79,15 @@ Selecting the accessibility button opens a 3-icon mode panel:
 ```bash
 cp ./.maplibre-gl-a11y.config.example.json ./.maplibre-gl-a11y.config.json
 # edit API keys/provider in ./.maplibre-gl-a11y.config.json
-node ./bin/style-analyzer.js ./path/to/style.json
+npx a11y ./path/to/style.json
 ```
 
 You can also pass config explicitly (recommended when installed in another project):
 
 ```bash
-maplibre-gl-a11y-cli ./path/to/style.json ./path/to/.maplibre-gl-a11y.config.json
+npx a11y ./path/to/style.json ./path/to/.maplibre-gl-a11y.config.json
 # or
-maplibre-gl-a11y-cli ./path/to/style.json --config ./path/to/.maplibre-gl-a11y.config.json
+npx a11y ./path/to/style.json --config ./path/to/.maplibre-gl-a11y.config.json
 ```
 
 The CLI:
@@ -101,7 +101,7 @@ The CLI:
 ### Non-interactive Mode
 
 ```bash
-node ./bin/style-analyzer.js ./path/to/style.json --non-interactive
+npx a11y ./path/to/style.json --non-interactive
 ```
 
 This writes `a11y_[name].json` without applying suggestions (baseline copy with audit output in terminal).

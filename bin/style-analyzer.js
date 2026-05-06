@@ -10,10 +10,15 @@ const { applyPatch } = jsonPatch;
 
 const DEFAULT_CONFIG_FILE = '.maplibre-gl-a11y.config.json';
 const DEFAULT_OUTPUT_PREFIX = 'a11y_';
+const PROVIDER_TIMEOUT_MS = 90000;
+const WAITING_LOG_INTERVAL_MS = 8000;
 const DEFAULT_MODEL_BY_PROVIDER = {
-  anthropic: 'claude-3-5-haiku-latest',
+  anthropic: 'claude-sonnet-4-6',
   openai: 'gpt-4o-mini',
   gemini: 'gemini-1.5-pro'
+};
+const DEPRECATED_ANTHROPIC_MODELS = {
+  'claude-3-5-haiku-latest': 'claude-sonnet-4-6'
 };
 
 function parseArgs(argv) {
@@ -67,11 +72,20 @@ function ensureProviderConfig(config) {
     throw new Error(`Config for "${provider}" must include "apiKey".`);
   }
 
+  let selectedModel = providerConfig.model || DEFAULT_MODEL_BY_PROVIDER[provider];
+  if (provider === 'anthropic' && DEPRECATED_ANTHROPIC_MODELS[selectedModel]) {
+    const replacementModel = DEPRECATED_ANTHROPIC_MODELS[selectedModel];
+    console.warn(
+      `Warning: Anthropic model "${selectedModel}" is deprecated. Using "${replacementModel}" instead.`
+    );
+    selectedModel = replacementModel;
+  }
+
   return {
     provider,
     apiKey: providerConfig.apiKey,
     apiUrl: providerConfig.apiUrl,
-    model: providerConfig.model || DEFAULT_MODEL_BY_PROVIDER[provider]
+    model: selectedModel
   };
 }
 
@@ -167,25 +181,64 @@ function getCompactStyleForA11y(style) {
   };
 }
 
+async function withWaitingNotice(label, operation) {
+  const startedAt = Date.now();
+  let tick = 0;
+  const timer = setInterval(() => {
+    tick += 1;
+    const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+    const dotSuffix = '.'.repeat((tick % 3) + 1);
+    console.log(`${label} (still waiting ${elapsedSeconds}s)${dotSuffix}`);
+  }, WAITING_LOG_INTERVAL_MS);
+
+  try {
+    return await operation();
+  } finally {
+    clearInterval(timer);
+  }
+}
+
 async function requestProviderCompletion({ providerConfig, systemPrompt, userPrompt, maxTokens }) {
   const { provider, apiKey, apiUrl, model } = providerConfig;
+  const requestOptionsBase = {
+    signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS)
+  };
 
   if (provider === 'anthropic') {
     const url = apiUrl || 'https://api.anthropic.com/v1/messages';
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
-      })
-    });
+    const makeAnthropicRequest = async (modelName) =>
+      fetch(url, {
+        ...requestOptionsBase,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: modelName,
+          max_tokens: maxTokens,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }]
+        })
+      });
+    let response = await withWaitingNotice('Waiting for Anthropic response', () =>
+      makeAnthropicRequest(model)
+    );
+    if (!response.ok && response.status === 404) {
+      const errorText = await response.text();
+      const isModelNotFound = /not_found_error|model/i.test(errorText);
+      if (isModelNotFound && model !== DEFAULT_MODEL_BY_PROVIDER.anthropic) {
+        console.warn(
+          `Warning: Anthropic model "${model}" was not found. Retrying with "${DEFAULT_MODEL_BY_PROVIDER.anthropic}".`
+        );
+        response = await withWaitingNotice('Retrying Anthropic request', () =>
+          makeAnthropicRequest(DEFAULT_MODEL_BY_PROVIDER.anthropic)
+        );
+      } else {
+        throw new Error(`Anthropic API error ${response.status}: ${errorText.slice(0, 300)}`);
+      }
+    }
     if (!response.ok) {
       const text = await response.text();
       throw new Error(`Anthropic API error ${response.status}: ${text.slice(0, 300)}`);
@@ -199,21 +252,24 @@ async function requestProviderCompletion({ providerConfig, systemPrompt, userPro
 
   if (provider === 'openai') {
     const url = apiUrl || 'https://api.openai.com/v1/chat/completions';
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.2,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ]
+    const response = await withWaitingNotice('Waiting for OpenAI response', () =>
+      fetch(url, {
+        ...requestOptionsBase,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.2,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ]
+        })
       })
-    });
+    );
     if (!response.ok) {
       const text = await response.text();
       throw new Error(`OpenAI API error ${response.status}: ${text.slice(0, 300)}`);
@@ -225,22 +281,25 @@ async function requestProviderCompletion({ providerConfig, systemPrompt, userPro
   if (provider === 'gemini') {
     const baseUrl = apiUrl || 'https://generativelanguage.googleapis.com/v1beta/models';
     const url = `${baseUrl}/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
+    const response = await withWaitingNotice('Waiting for Gemini response', () =>
+      fetch(url, {
+        ...requestOptionsBase,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: maxTokens
           }
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: maxTokens
-        }
+        })
       })
-    });
+    );
     if (!response.ok) {
       const text = await response.text();
       throw new Error(`Gemini API error ${response.status}: ${text.slice(0, 300)}`);
@@ -260,41 +319,124 @@ async function requestProviderCompletion({ providerConfig, systemPrompt, userPro
 
 function parseJsonObjectFromModel(text) {
   const trimmed = text.trim();
-  const match = trimmed.match(/\{[\s\S]*\}/);
-  if (!match) {
+  if (!trimmed) {
+    throw new Error('Model response was empty.');
+  }
+
+  const codeFenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (codeFenceMatch && codeFenceMatch[1]) {
+    const fenced = codeFenceMatch[1].trim();
+    try {
+      return JSON.parse(fenced);
+    } catch {
+      // Continue with fallback extraction.
+    }
+  }
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    // Continue with fallback extraction.
+  }
+
+  const startIndex = trimmed.indexOf('{');
+  if (startIndex === -1) {
     throw new Error('Model response did not contain a JSON object.');
   }
-  return JSON.parse(match[0]);
+
+  let depth = 0;
+  let inString = false;
+  let isEscaped = false;
+  for (let i = startIndex; i < trimmed.length; i += 1) {
+    const char = trimmed[i];
+    if (inString) {
+      if (isEscaped) {
+        isEscaped = false;
+      } else if (char === '\\') {
+        isEscaped = true;
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+    if (char === '{') {
+      depth += 1;
+      continue;
+    }
+    if (char === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        const candidate = trimmed.slice(startIndex, i + 1);
+        return JSON.parse(candidate);
+      }
+    }
+  }
+
+  throw new Error('Model response did not contain a complete JSON object.');
 }
 
 async function evaluateStyleAccessibility({ style, providerConfig }) {
   const systemPrompt =
     'You are a map style accessibility reviewer. Evaluate this MapLibre style against WCAG 2.2 and practical cartographic accessibility principles. Return ONLY JSON with keys: helpfulAndDoneWell (string[]), standardsNotMet ({criterion:string, explanation:string}[]), fontsAndSpritesAssessment ({evaluated:boolean, findings:string[], guidance:string[]}). Each standardsNotMet item must cite a specific WCAG criterion or W3C/WAI guidance in criterion.';
-  const userPrompt = `Review this compact style snapshot and provide an accessibility report:\n\n${JSON.stringify(
+  const baseUserPrompt = `Review this compact style snapshot and provide an accessibility report:\n\n${JSON.stringify(
     getCompactStyleForA11y(style)
   )}`;
-  const responseText = await requestProviderCompletion({
-    providerConfig,
-    systemPrompt,
-    userPrompt,
-    maxTokens: 2400
-  });
-  return parseJsonObjectFromModel(responseText);
+  const prompts = [
+    baseUserPrompt,
+    `${baseUserPrompt}\n\nIMPORTANT: Return ONLY valid JSON. No markdown fences, no commentary, and keep lists concise.`
+  ];
+
+  let lastParseError;
+  for (let attempt = 0; attempt < prompts.length; attempt += 1) {
+    const responseText = await requestProviderCompletion({
+      providerConfig,
+      systemPrompt,
+      userPrompt: prompts[attempt],
+      maxTokens: attempt === 0 ? 2400 : 4000
+    });
+    try {
+      return parseJsonObjectFromModel(responseText);
+    } catch (error) {
+      lastParseError = error;
+    }
+  }
+  throw lastParseError;
 }
 
 async function suggestAccessibilityChanges({ style, report, providerConfig }) {
   const systemPrompt =
-    'You propose accessibility improvements for a MapLibre style. Return ONLY JSON with shape {"suggestions":[{"id":"string","title":"string","reason":"string","wcagCitation":"string","patch":[RFC6902 ops]}]}. Include at most 10 suggestions. Each reason should be concise and each suggestion must include a wcagCitation such as "WCAG 2.2 - 1.4.3 Contrast (Minimum)". Use /layers/<layer_id>/... paths when possible.';
-  const userPrompt = `Accessibility report:\n${JSON.stringify(report)}\n\nCurrent compact style snapshot:\n${JSON.stringify(
+    'You propose accessibility improvements for a MapLibre style. Validate every suggestion against the MapLibre Style Spec (https://maplibre.org/maplibre-style-spec/) before returning it. Return ONLY JSON with shape {"suggestions":[{"id":"string","title":"string","reason":"string","wcagCitation":"string","patch":[RFC6902 ops]}]}. Include at most 10 suggestions. Each reason should be concise and each suggestion must include a wcagCitation such as "WCAG 2.2 - 1.4.3 Contrast (Minimum)". Use /layers/<layer_id>/... paths when possible. For expression edits, ALWAYS return complete valid expressions (for interpolate include all stop/value pairs and final value).';
+  const baseUserPrompt = `Accessibility report:\n${JSON.stringify(report)}\n\nCurrent compact style snapshot:\n${JSON.stringify(
     getCompactStyleForA11y(style)
   )}\n\nReturn suggestions that address standardsNotMet and improve readability, contrast, and legibility.`;
-  const responseText = await requestProviderCompletion({
-    providerConfig,
-    systemPrompt,
-    userPrompt,
-    maxTokens: 3200
-  });
-  const parsed = parseJsonObjectFromModel(responseText);
+  const prompts = [
+    baseUserPrompt,
+    `${baseUserPrompt}\n\nIMPORTANT: Return ONLY valid JSON. No markdown fences, no commentary. Every patch MUST be valid against the style spec and syntactically complete.`
+  ];
+  let parsed;
+  let lastParseError;
+  for (let attempt = 0; attempt < prompts.length; attempt += 1) {
+    const responseText = await requestProviderCompletion({
+      providerConfig,
+      systemPrompt,
+      userPrompt: prompts[attempt],
+      maxTokens: attempt === 0 ? 3200 : 5000
+    });
+    try {
+      parsed = parseJsonObjectFromModel(responseText);
+      break;
+    } catch (error) {
+      lastParseError = error;
+    }
+  }
+  if (!parsed) {
+    throw lastParseError;
+  }
   if (!Array.isArray(parsed.suggestions)) {
     throw new Error('Suggestions response was missing "suggestions" array.');
   }
@@ -346,8 +488,130 @@ function applySelectedPatches(style, suggestions, selectedIds) {
     return style;
   }
 
-  const copy = JSON.parse(JSON.stringify(style));
-  applyPatch(copy, patch, true, true);
+  const layerIndexById = new Map();
+  const layers = Array.isArray(style.layers) ? style.layers : [];
+  for (let index = 0; index < layers.length; index += 1) {
+    const layerId = layers[index]?.id;
+    if (typeof layerId === 'string') {
+      layerIndexById.set(layerId, index);
+    }
+  }
+
+  const normalizedPatch = patch.flatMap((operation) => {
+    if (!operation || typeof operation !== 'object' || typeof operation.path !== 'string') {
+      return [];
+    }
+    const match = operation.path.match(/^\/layers\/([^/]+)(\/.*)?$/);
+    if (!match) {
+      return [operation];
+    }
+
+    const layerToken = decodeURIComponent(match[1]);
+    if (/^\d+$/.test(layerToken)) {
+      return [operation];
+    }
+
+    const layerIndex = layerIndexById.get(layerToken);
+    if (typeof layerIndex !== 'number') {
+      console.warn(`Warning: skipping patch operation for unknown layer id "${layerToken}".`);
+      return [];
+    }
+
+    const suffix = match[2] || '';
+    return [{ ...operation, path: `/layers/${layerIndex}${suffix}` }];
+  });
+
+  if (normalizedPatch.length === 0) {
+    console.warn('Warning: no applicable patch operations were found after normalization.');
+    return style;
+  }
+
+  let copy = JSON.parse(JSON.stringify(style));
+  const getInvalidInterpolateExpressions = (styleObject) => {
+    const invalid = [];
+    const layersInStyle = Array.isArray(styleObject.layers) ? styleObject.layers : [];
+    const sections = ['layout', 'paint'];
+
+    for (let layerIndex = 0; layerIndex < layersInStyle.length; layerIndex += 1) {
+      const layer = layersInStyle[layerIndex];
+      for (const sectionName of sections) {
+        const section = layer?.[sectionName];
+        if (!section || typeof section !== 'object') {
+          continue;
+        }
+        for (const [propertyName, propertyValue] of Object.entries(section)) {
+          if (!Array.isArray(propertyValue) || propertyValue[0] !== 'interpolate') {
+            continue;
+          }
+          if (propertyValue.length < 5 || (propertyValue.length - 3) % 2 !== 0) {
+            invalid.push(`layers[${layerIndex}].${sectionName}.${propertyName}`);
+          }
+        }
+      }
+    }
+    return invalid;
+  };
+
+  const repairInterpolateExpression = (value) => {
+    if (!Array.isArray(value) || value[0] !== 'interpolate') {
+      return value;
+    }
+    if (value.length >= 5 && (value.length - 3) % 2 === 0) {
+      return value;
+    }
+    if (value.length < 6) {
+      return value;
+    }
+    const repaired = [...value];
+    const previousValue = repaired[repaired.length - 2];
+    repaired.push(previousValue);
+    return repaired;
+  };
+
+  const repairOperationValue = (value) => {
+    if (Array.isArray(value)) {
+      const maybeRepairedInterpolate = repairInterpolateExpression(value);
+      return maybeRepairedInterpolate.map((entry) => repairOperationValue(entry));
+    }
+    if (value && typeof value === 'object') {
+      const out = {};
+      for (const [key, entryValue] of Object.entries(value)) {
+        out[key] = repairOperationValue(entryValue);
+      }
+      return out;
+    }
+    return value;
+  };
+
+  let appliedCount = 0;
+  for (const operation of normalizedPatch) {
+    const snapshot = JSON.parse(JSON.stringify(copy));
+    const operationToApply = {
+      ...operation,
+      value: repairOperationValue(operation.value)
+    };
+    try {
+      applyPatch(copy, [operationToApply], true, true);
+      const invalidInterpolatePaths = getInvalidInterpolateExpressions(copy);
+      if (invalidInterpolatePaths.length > 0) {
+        copy = snapshot;
+        console.warn(
+          `Warning: skipping operation "${operation.op}" at "${operation.path}" because it created invalid interpolate expression(s): ${invalidInterpolatePaths.join(', ')}`
+        );
+        continue;
+      }
+      appliedCount += 1;
+    } catch (error) {
+      copy = snapshot;
+      console.warn(
+        `Warning: skipping invalid patch operation "${operation.op}" at "${operation.path}": ${error.message}`
+      );
+    }
+  }
+  if (appliedCount === 0) {
+    console.warn('Warning: no valid patch operations could be applied. Returning baseline style.');
+    return style;
+  }
   return copy;
 }
 
@@ -398,15 +662,24 @@ async function main() {
   }
 
   console.log('\nGenerating suggested style edits...');
-  const suggestions = await suggestAccessibilityChanges({ style, report, providerConfig });
+  let suggestions = [];
+  let suggestionError;
+  try {
+    suggestions = await suggestAccessibilityChanges({ style, report, providerConfig });
+  } catch (error) {
+    suggestionError = error;
+    console.warn(`Warning: failed to generate suggestions. Writing baseline output. (${error.message})`);
+  }
 
-  const selectedIds = await chooseSuggestions(suggestions, args.nonInteractive);
-  const updatedStyle = applySelectedPatches(style, suggestions, selectedIds);
+  const selectedIds = suggestionError ? [] : await chooseSuggestions(suggestions, args.nonInteractive);
+  const updatedStyle = suggestionError ? style : applySelectedPatches(style, suggestions, selectedIds);
 
   fs.writeFileSync(outputPath, `${JSON.stringify(updatedStyle, null, 2)}\n`, 'utf8');
 
   console.log(`\nWrote ${path.basename(outputPath)} successfully`);
-  if (selectedIds.length === 0) {
+  if (suggestionError) {
+    console.log('No suggestions were applied because suggestion generation failed.');
+  } else if (selectedIds.length === 0) {
     console.log('No suggestions were applied; output is a copied style baseline.');
   } else {
     console.log(`Applied ${selectedIds.length} suggestion(s).`);

@@ -17,7 +17,7 @@ const map = new maplibregl.Map({
 
 map.on('load', () => {
   map.addAccessability({
-    accessibleStyle: 'style.json',
+    accessibleStyle: 'a11y_style.json',
     layers: ['glasgow-2011-imd-fill'],
     layerAliases: {
       'glasgow-2011-imd-fill': 'Glasgow 2011 IMD'

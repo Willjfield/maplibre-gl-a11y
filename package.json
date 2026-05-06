@@ -15,6 +15,7 @@
     "./cli": "./bin/style-analyzer.js"
   },
   "bin": {
+    "a11y": "./bin/style-analyzer.js",
     "maplibre-gl-a11y-cli": "./bin/style-analyzer.js"
   },
   "files": [

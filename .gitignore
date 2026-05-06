@@ -1,3 +1,6 @@
+# Config file with API keys
+.maplibre-gl-a11y.config.json
+
 # Logs
 logs
 *.log
