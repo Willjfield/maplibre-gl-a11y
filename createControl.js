@@ -49,7 +49,11 @@ function normalizeLayerConfig(options) {
     }
   }
 
-  if (options.layerProperties && typeof options.layerProperties === 'object') {
+  if (Array.isArray(options.layerProperties)) {
+    console.warn(
+      'maplibre-gl-a11y: layerProperties should be an object keyed by layer id. Ignoring array input.'
+    );
+  } else if (options.layerProperties && typeof options.layerProperties === 'object') {
     for (const [layerId, properties] of Object.entries(options.layerProperties)) {
       if (!targetLayers.includes(layerId)) {
         targetLayers.push(layerId);
@@ -119,6 +123,8 @@ export default function createControl(map, options = {}) {
   const borderWidth = Number.isFinite(options.borderWidth) ? options.borderWidth : 1;
   const accessibleStyle = options.accessibleStyle;
   const speechEnabled = options.speechEnabled !== false;
+  const layerAliases = options.layerAliases && typeof options.layerAliases === 'object' ? options.layerAliases : {};
+  const propertyAliases = options.propertyAliases && typeof options.propertyAliases === 'object' ? options.propertyAliases : {};
 
   let controlContainer;
   let controlButton;
@@ -144,6 +150,9 @@ export default function createControl(map, options = {}) {
   let audioLastAnnouncement = '';
   let magnifierElement;
   let togglePanelHandler;
+  let previousCursorStyle = '';
+  let gridEventBlocker;
+  let gridGlobalKeydownHandler;
 
   function announceKeyboardHelp() {
     if (!srAnnouncementElement) {
@@ -196,15 +205,45 @@ export default function createControl(map, options = {}) {
     return feature.properties || {};
   }
 
+  function getLayerDisplayName(layerId) {
+    if (typeof layerAliases[layerId] === 'string' && layerAliases[layerId].trim()) {
+      return layerAliases[layerId];
+    }
+    return layerId || 'unknown-layer';
+  }
+
+  function getPropertyDisplayName(layerId, propertyName) {
+    const globalAlias = propertyAliases[propertyName];
+    if (typeof globalAlias === 'string' && globalAlias.trim()) {
+      return globalAlias;
+    }
+
+    const layerSpecificAliases = propertyAliases[layerId];
+    if (
+      layerSpecificAliases &&
+      typeof layerSpecificAliases === 'object' &&
+      !Array.isArray(layerSpecificAliases) &&
+      typeof layerSpecificAliases[propertyName] === 'string' &&
+      layerSpecificAliases[propertyName].trim()
+    ) {
+      return layerSpecificAliases[propertyName];
+    }
+
+    return propertyName;
+  }
+
   function buildFeatureSummary(feature) {
     const properties = getFeaturePropertiesForLayer(feature);
     const propertyEntries = Object.entries(properties);
+    const layerId = feature.layer?.id || '';
 
     if (propertyEntries.length === 0) {
       return getFeatureLabel(feature);
     }
 
-    return propertyEntries.map(([key, value]) => `${key}:${String(value)}`).join(', ');
+    return propertyEntries
+      .map(([key, value]) => `${getPropertyDisplayName(layerId, key)}:${String(value)}`)
+      .join(', ');
   }
 
   function buildCellAriaLabel(cell) {
@@ -214,7 +253,7 @@ export default function createControl(map, options = {}) {
 
     const layerSummaries = {};
     for (const feature of cell.features) {
-      const layerName = feature.layer?.id || 'unknown-layer';
+      const layerName = getLayerDisplayName(feature.layer?.id || '');
       if (!layerSummaries[layerName]) {
         layerSummaries[layerName] = [];
       }
@@ -250,7 +289,8 @@ export default function createControl(map, options = {}) {
     for (const feature of cell.features) {
       const item = document.createElement('li');
       item.className = 'maplibre-gl-a11y-feature-item';
-      const layerName = feature.layer?.id || 'unknown-layer';
+      const layerId = feature.layer?.id || '';
+      const layerName = getLayerDisplayName(layerId);
       const title = document.createElement('div');
       title.className = 'maplibre-gl-a11y-feature-title';
       title.textContent = `${layerName}: ${getFeatureLabel(feature)}`;
@@ -263,7 +303,7 @@ export default function createControl(map, options = {}) {
         propertyList.className = 'maplibre-gl-a11y-property-list';
         for (const [key, value] of propertyEntries) {
           const propItem = document.createElement('li');
-          propItem.textContent = `${key}: ${String(value)}`;
+          propItem.textContent = `${getPropertyDisplayName(layerId, key)}: ${String(value)}`;
           propertyList.appendChild(propItem);
         }
         item.appendChild(propertyList);
@@ -311,7 +351,7 @@ export default function createControl(map, options = {}) {
     }
     const topFeatures = features.slice(0, 3);
     const featureText = topFeatures.map((feature) => {
-      const layerName = feature.layer?.id || 'unknown-layer';
+      const layerName = getLayerDisplayName(feature.layer?.id || '');
       return `${layerName}: ${buildFeatureSummary(feature)}`;
     });
     const suffix = features.length > topFeatures.length ? ` plus ${features.length - topFeatures.length} more` : '';
@@ -323,7 +363,7 @@ export default function createControl(map, options = {}) {
       return 'No features inside the inspection square.';
     }
     const details = features.map((feature, index) => {
-      const layerName = feature.layer?.id || 'unknown-layer';
+      const layerName = getLayerDisplayName(feature.layer?.id || '');
       return `Feature ${index + 1} in ${layerName}: ${buildFeatureSummary(feature)}`;
     });
     return `${features.length} features in inspection square. ${details.join('; ')}`;
@@ -362,6 +402,15 @@ export default function createControl(map, options = {}) {
     return cells[row * gridColumns + col];
   }
 
+  function getCenterCell() {
+    if (!cells.length || gridRows === 0 || gridColumns === 0) {
+      return undefined;
+    }
+    const centerRow = Math.floor(gridRows / 2);
+    const centerCol = Math.floor(gridColumns / 2);
+    return getCellAt(centerRow, centerCol) || cells[0];
+  }
+
   function panMapByCellOffset(dx, dy) {
     const canvas = map.getCanvas();
     const center = [
@@ -372,6 +421,102 @@ export default function createControl(map, options = {}) {
       center: map.unproject(center),
       duration: 250
     });
+  }
+
+  function handleGridKeyDownForCell(cell, event) {
+    const key = event.key;
+    const isKeyZ = event.code === 'KeyZ';
+    const isShiftZ = isKeyZ && event.shiftKey;
+    const isZoomInZ = isKeyZ && !event.shiftKey;
+    if (key === 'h' || key === 'H') {
+      event.preventDefault();
+      event.stopPropagation();
+      announceKeyboardHelp();
+      return;
+    }
+    if (key === 'c' || key === 'C') {
+      event.preventDefault();
+      event.stopPropagation();
+      const x = (cell.bbox[0][0] + cell.bbox[1][0]) / 2;
+      const y = (cell.bbox[0][1] + cell.bbox[1][1]) / 2;
+      map.easeTo({
+        center: map.unproject([x, y]),
+        duration: 250
+      });
+      return;
+    }
+    if (isShiftZ) {
+      event.preventDefault();
+      event.stopPropagation();
+      map.easeTo({
+        zoom: map.getZoom() - 1,
+        duration: 250
+      });
+      return;
+    }
+    if (isZoomInZ) {
+      event.preventDefault();
+      event.stopPropagation();
+      map.easeTo({
+        zoom: map.getZoom() + 1,
+        duration: 250
+      });
+      return;
+    }
+
+    let targetCell;
+    switch (key) {
+      case 'ArrowUp':
+        targetCell = getCellAt(cell.row - 1, cell.col);
+        break;
+      case 'ArrowDown':
+        targetCell = getCellAt(cell.row + 1, cell.col);
+        break;
+      case 'ArrowLeft':
+        targetCell = getCellAt(cell.row, cell.col - 1);
+        break;
+      case 'ArrowRight':
+        targetCell = getCellAt(cell.row, cell.col + 1);
+        break;
+      case 'Home':
+        targetCell = getCellAt(cell.row, 0);
+        break;
+      case 'End':
+        targetCell = getCellAt(cell.row, gridColumns - 1);
+        break;
+      case 'Escape':
+        event.preventDefault();
+        event.stopPropagation();
+        controlButton.focus();
+        return;
+      default:
+        return;
+    }
+
+    if (!targetCell) {
+      if (key === 'ArrowUp') {
+        event.preventDefault();
+        event.stopPropagation();
+        panMapByCellOffset(0, -cellSize);
+      } else if (key === 'ArrowDown') {
+        event.preventDefault();
+        event.stopPropagation();
+        panMapByCellOffset(0, cellSize);
+      } else if (key === 'ArrowLeft') {
+        event.preventDefault();
+        event.stopPropagation();
+        panMapByCellOffset(-cellSize, 0);
+      } else if (key === 'ArrowRight') {
+        event.preventDefault();
+        event.stopPropagation();
+        panMapByCellOffset(cellSize, 0);
+      }
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    setActiveCell(targetCell, true);
   }
 
   function buildGridOverlay() {
@@ -453,99 +598,7 @@ export default function createControl(map, options = {}) {
           cellElement.classList.remove('maplibre-gl-a11y-grid-cell-active');
         };
         const onCellKeyDown = (event) => {
-          const key = event.key;
-          const isKeyZ = event.code === 'KeyZ';
-          const isShiftZ = isKeyZ && event.shiftKey;
-          const isZoomInZ = isKeyZ && !event.shiftKey;
-          if (key === 'h' || key === 'H') {
-            event.preventDefault();
-            event.stopPropagation();
-            announceKeyboardHelp();
-            return;
-          }
-          if (key === 'c' || key === 'C') {
-            event.preventDefault();
-            event.stopPropagation();
-            const x = (cell.bbox[0][0] + cell.bbox[1][0]) / 2;
-            const y = (cell.bbox[0][1] + cell.bbox[1][1]) / 2;
-            map.easeTo({
-              center: map.unproject([x, y]),
-              duration: 250
-            });
-            return;
-          }
-          if (isShiftZ) {
-            event.preventDefault();
-            event.stopPropagation();
-            map.easeTo({
-              zoom: map.getZoom() - 1,
-              duration: 250
-            });
-            return;
-          }
-          if (isZoomInZ) {
-            event.preventDefault();
-            event.stopPropagation();
-            map.easeTo({
-              zoom: map.getZoom() + 1,
-              duration: 250
-            });
-            return;
-          }
-
-          let targetCell;
-          switch (key) {
-            case 'ArrowUp':
-              targetCell = getCellAt(cell.row - 1, cell.col);
-              break;
-            case 'ArrowDown':
-              targetCell = getCellAt(cell.row + 1, cell.col);
-              break;
-            case 'ArrowLeft':
-              targetCell = getCellAt(cell.row, cell.col - 1);
-              break;
-            case 'ArrowRight':
-              targetCell = getCellAt(cell.row, cell.col + 1);
-              break;
-            case 'Home':
-              targetCell = getCellAt(cell.row, 0);
-              break;
-            case 'End':
-              targetCell = getCellAt(cell.row, gridColumns - 1);
-              break;
-            case 'Escape':
-              event.preventDefault();
-              event.stopPropagation();
-              controlButton.focus();
-              return;
-            default:
-              return;
-          }
-
-          if (!targetCell) {
-            if (key === 'ArrowUp') {
-              event.preventDefault();
-              event.stopPropagation();
-              panMapByCellOffset(0, -cellSize);
-            } else if (key === 'ArrowDown') {
-              event.preventDefault();
-              event.stopPropagation();
-              panMapByCellOffset(0, cellSize);
-            } else if (key === 'ArrowLeft') {
-              event.preventDefault();
-              event.stopPropagation();
-              panMapByCellOffset(-cellSize, 0);
-            } else if (key === 'ArrowRight') {
-              event.preventDefault();
-              event.stopPropagation();
-              panMapByCellOffset(cellSize, 0);
-            }
-            return;
-          }
-
-          event.preventDefault();
-          event.stopPropagation();
-          setActiveCell(targetCell, true);
+          handleGridKeyDownForCell(cell, event);
         };
         cellElement.addEventListener('mouseenter', onActivateCell);
         cellElement.addEventListener('focus', onActivateCell);
@@ -588,9 +641,19 @@ export default function createControl(map, options = {}) {
     }
 
     if (overlayContainer && overlayContainer.parentNode) {
+      if (gridEventBlocker) {
+        for (const eventName of ['click', 'dblclick', 'mousedown', 'mouseup', 'mousemove', 'wheel', 'touchstart', 'touchmove', 'touchend']) {
+          overlayContainer.removeEventListener(eventName, gridEventBlocker, { capture: true });
+        }
+      }
       overlayContainer.parentNode.removeChild(overlayContainer);
     }
+    if (gridGlobalKeydownHandler) {
+      document.removeEventListener('keydown', gridGlobalKeydownHandler, true);
+      gridGlobalKeydownHandler = undefined;
+    }
     overlayContainer = undefined;
+    gridEventBlocker = undefined;
     cells = [];
 
     if (reenableNativeKeyboard && map.keyboard) {
@@ -611,6 +674,47 @@ export default function createControl(map, options = {}) {
       overlayContainer.setAttribute('aria-describedby', keyboardHelpElementId);
     }
     map.getCanvasContainer().appendChild(overlayContainer);
+    gridEventBlocker = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    for (const eventName of ['click', 'dblclick', 'mousedown', 'mouseup', 'mousemove', 'wheel', 'touchstart', 'touchmove', 'touchend']) {
+      overlayContainer.addEventListener(eventName, gridEventBlocker, { capture: true });
+    }
+    gridGlobalKeydownHandler = (event) => {
+      const navigationKeys = new Set([
+        'ArrowUp',
+        'ArrowDown',
+        'ArrowLeft',
+        'ArrowRight',
+        'Home',
+        'End',
+        'Escape',
+        'h',
+        'H',
+        'c',
+        'C'
+      ]);
+      const isZoomShortcut = event.code === 'KeyZ';
+      if (!navigationKeys.has(event.key) && !isZoomShortcut) {
+        return;
+      }
+      if (activeMode !== 'grid') {
+        return;
+      }
+      if (document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('maplibre-gl-a11y-grid-cell')) {
+        return;
+      }
+      const activeCell = cells.find((gridCell) =>
+        gridCell.element.classList.contains('maplibre-gl-a11y-grid-cell-active')
+      ) || getCenterCell();
+      if (!activeCell) {
+        return;
+      }
+      setActiveCell(activeCell, true);
+      handleGridKeyDownForCell(activeCell, event);
+    };
+    document.addEventListener('keydown', gridGlobalKeydownHandler, true);
 
     setMouseInteractionEnabled(map, false);
     if (map.keyboard && map.keyboard.isEnabled()) {
@@ -622,8 +726,11 @@ export default function createControl(map, options = {}) {
     }
     buildGridOverlay();
     announceKeyboardHelp();
-    if (cells.length > 0) {
-      setActiveCell(cells[0], true);
+    const centerCell = getCenterCell();
+    if (centerCell) {
+      window.requestAnimationFrame(() => {
+        setActiveCell(centerCell, true);
+      });
     }
   }
 
@@ -676,10 +783,13 @@ export default function createControl(map, options = {}) {
 
   function activateAudioExploreMode() {
     setMouseInteractionEnabled(map, true);
+    previousCursorStyle = map.getCanvas().style.cursor;
+    map.getCanvas().style.cursor = 'crosshair';
     createMagnifier();
     map.on('mousemove', handleAudioPointerMove);
     map.on('click', handleAudioPointerClick);
-    announce('Audio explore mode active. Move the mouse to hear summarized features. Click to announce details.', true);
+    announce('Explore the map with the mouse and click to read features within the red square', true);
+    speak('Explore the map with the mouse and click to read features within the red square');
   }
 
   function deactivateAudioExploreMode() {
@@ -689,6 +799,8 @@ export default function createControl(map, options = {}) {
     }
     map.off('mousemove', handleAudioPointerMove);
     map.off('click', handleAudioPointerClick);
+    map.getCanvas().style.cursor = previousCursorStyle;
+    previousCursorStyle = '';
     audioLastAnnouncement = '';
     destroyMagnifier();
   }
@@ -756,6 +868,7 @@ export default function createControl(map, options = {}) {
     }
 
     activeMode = nextMode;
+    closeModePanel();
 
     if (activeMode === 'grid') {
       activateGridOverlay();
@@ -769,6 +882,7 @@ export default function createControl(map, options = {}) {
       activateAudioExploreMode();
     } else {
       setMouseInteractionEnabled(map, true);
+      map.getCanvas().style.cursor = '';
       announce('Accessibility mode cleared.', false);
     }
 

@@ -158,8 +158,8 @@
 
 .maplibre-gl-a11y-keyboard-help {
   position: absolute;
-  top: 0;
-  left: calc(100% + 8px);
+  top: 48px;
+  left: 0px;
   min-width: 280px;
   padding: 10px 12px;
   border-radius: 8px;

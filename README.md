@@ -1,14 +1,17 @@
 # maplibre-gl-a11y
 
-Scaffold for a `maplibre-gl-js` accessibility plugin and companion CLI.
+Accessibility tooling for `maplibre-gl-js`, including:
+
+- an in-map accessibility control with multiple interaction modes
+- a companion CLI that audits and generates accessibility-oriented style variants
 
 ## Install
 
 ```bash
-npm install
+npm install @willjfield/maplibre-gl-a11y
 ```
 
-## Plugin usage
+## Plugin Usage
 
 ```js
 import maplibregl from 'maplibre-gl';
@@ -21,21 +24,65 @@ const map = new maplibregl.Map({
   style: 'https://demotiles.maplibre.org/style.json'
 });
 
-map.addAccessability();
-map.hideAccessibility();
+map.addAccessability({
+  accessibleStyle: 'https://example.com/a11y-style.json',
+  layers: [{ id: 'countries-fill', properties: ['NAME'] }],
+  layerAliases: { 'countries-fill': 'Countries' },
+  propertyAliases: { NAME: 'Country Name' }
+});
 ```
 
-Both methods currently log `hello world`.
+The plugin installs two methods onto `Map`:
 
-## CLI usage
+- `map.addAccessability(options?)` to add the control
+- `map.hideAccessibility()` to remove it
+
+Note: `addAccessability` intentionally uses that spelling for backward compatibility.
+
+## Accessibility Control Modes
+
+Selecting the accessibility button opens a 3-icon mode panel:
+
+- `Grid mode`:
+  - shows a keyboard-navigable feature grid overlay
+  - disables map mouse/touch interaction while active
+  - blocks map pointer events behind the grid
+  - supports keyboard actions (arrows, Home/End, `c`, `z`/`Shift+z`, `h`, `Esc`)
+- `Accessible style mode`:
+  - switches to `options.accessibleStyle` if provided
+  - restores the original map style when the mode is turned off or switched
+- `Audio explore mode`:
+  - sets the map cursor to crosshair
+  - shows a red square inspection overlay following the pointer
+  - hover updates a screen-reader live region with feature summaries
+  - click reads all features/properties within the red square bounding box
+  - announces and speaks:
+    - `Explore the map with the mouse and click to read features within the red square`
+
+## `addAccessability` Options
+
+- `placement` (`string`): MapLibre control placement (default: `top-left`)
+- `accessibleStyle` (`string | object`): style URL or style object used by Accessible style mode
+- `layers` (`string[] | { id: string; properties?: string[] }[]`): optional layer filter and per-layer property allowlist
+- `layerProperties` (`Record<string, string[]>`): optional per-layer property allowlist
+- `layerAliases` (`Record<string, string>`): optional display names for layer ids in spoken/text output
+- `propertyAliases` (`Record<string, string> | Record<string, Record<string, string>>`):
+  optional display names for property keys, either global or layer-specific
+- `cellSize` (`number`): grid cell size in pixels (default: `48`, min `8`)
+- `showGridBorder` (`boolean`): show/hide cell borders (default: `true`)
+- `borderColor` (`string`): grid border color
+- `borderWidth` (`number`): grid border width
+- `speechEnabled` (`boolean`): enable browser speech synthesis for spoken output (default: `true`)
+
+## CLI Usage
 
 ```bash
 cp ./.maplibre-gl-a11y.config.example.json ./.maplibre-gl-a11y.config.json
-# edit API keys/provider in .maplibre-gl-a11y.config.json
+# edit API keys/provider in ./.maplibre-gl-a11y.config.json
 node ./bin/style-analyzer.js ./path/to/style.json
 ```
 
-You can also pass config explicitly (recommended when installed via npm in another project):
+You can also pass config explicitly (recommended when installed in another project):
 
 ```bash
 maplibre-gl-a11y-cli ./path/to/style.json ./path/to/.maplibre-gl-a11y.config.json
@@ -43,15 +90,15 @@ maplibre-gl-a11y-cli ./path/to/style.json ./path/to/.maplibre-gl-a11y.config.jso
 maplibre-gl-a11y-cli ./path/to/style.json --config ./path/to/.maplibre-gl-a11y.config.json
 ```
 
-The CLI now:
+The CLI:
 
 - reads the input style
 - sends a compact style snapshot to your configured provider (`anthropic`, `openai`, or `gemini`) for WCAG-focused audit
-- requests suggested RFC6902 JSON patch edits with WCAG citations
+- requests RFC6902 JSON patch suggestions with WCAG citations
 - lets you apply `all`, `none`, or a comma-separated subset interactively
-- writes output to `a11y_[name].json` in the same folder as the input style
+- writes output to `a11y_[name].json` beside the input style
 
-### Non-interactive mode
+### Non-interactive Mode
 
 ```bash
 node ./bin/style-analyzer.js ./path/to/style.json --non-interactive
@@ -59,15 +106,7 @@ node ./bin/style-analyzer.js ./path/to/style.json --non-interactive
 
 This writes `a11y_[name].json` without applying suggestions (baseline copy with audit output in terminal).
 
-### Add npm script in consuming project
-
-Packages generally should not auto-edit a consumer's `package.json` on install. Instead, from the consuming project root:
-
-```bash
-npm pkg set scripts.a11y-audit="maplibre-gl-a11y-cli ./style.json ./path/to/.maplibre-gl-a11y.config.json"
-```
-
 ## Scripts
 
-- `npm run build` - Build ESM and minified UMD bundles into `dist/`
-- `npm run demo` - Build first, then start Vite demo server
+- `npm run build`: build ESM and minified UMD bundles into `dist/`
+- `npm run demo`: build first, then start Vite demo server

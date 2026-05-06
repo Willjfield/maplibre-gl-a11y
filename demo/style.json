@@ -1,0 +1,3957 @@
+{
+    "version": 8,
+    "id": "uk-openzoomstack-road",
+    "name": "UK OS Open Zoomstack",
+    "sources": {
+      "composite": {
+        "url": "https://api.maptiler.com/tiles/uk-openzoomstack/tiles.json?key=tm1vrxNic5cwBrZ5W0zx",
+        "type": "vector"
+      },
+      "glasgow-2011-imd": {
+        "type": "geojson",
+        "data": "./Glasgow_2011_IMD.geojson"
+      }
+    },
+    "layers": [
+      {
+        "id": "Background",
+        "type": "background",
+        "paint": {
+          "background-color": "#fafaf3"
+        }
+      },
+      {
+        "id": "Sea",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "sea",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#d5eff8"
+        }
+      },
+      {
+        "id": "National park",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "national_parks",
+        "maxzoom": 12,
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#e5f5cc",
+          "fill-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            9, 0.8, 12, 0.1]
+        }
+      },
+      {
+        "id": "Urban area",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "urban_areas",
+        "maxzoom": 11,
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#fadab4",
+          "fill-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            6, 0.4, 11, 0.6]
+        }
+      },
+      {
+        "id": "Other sites",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "sites",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#e3e3e3",
+          "fill-opacity": 0.6
+        },
+        "filter": [
+          "!in",
+          "type",
+          "Air Transport",
+          "Education",
+          "Medical Care",
+          "Road Transport",
+          "Water Transport"
+        ]
+      },
+      {
+        "id": "Water transport",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "sites",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#dddffe",
+          "fill-opacity": 0.6
+        },
+        "filter": [
+          "==",
+          "type",
+          "Water Transport"
+        ]
+      },
+      {
+        "id": "Road transport",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "sites",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#fff9b3",
+          "fill-opacity": 0.6
+        },
+        "filter": [
+          "==",
+          "type",
+          "Road Transport"
+        ]
+      },
+      {
+        "id": "Medical care",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "sites",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#fdd9e2",
+          "fill-opacity": 0.6
+        },
+        "filter": [
+          "==",
+          "type",
+          "Medical Care"
+        ]
+      },
+      {
+        "id": "Education",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "sites",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#ffe494",
+          "fill-opacity": 0.6
+        },
+        "filter": [
+          "==",
+          "type",
+          "Education"
+        ]
+      },
+      {
+        "id": "Air transport",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "sites",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#e3e3e3",
+          "fill-opacity": 0.6
+        },
+        "filter": [
+          "==",
+          "type",
+          "Air Transport"
+        ]
+      },
+      {
+        "id": "Greenspace",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "greenspaces",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-antialias": false,
+          "fill-color": "#ebf5e5"
+        }
+      },
+      {
+        "id": "Greenspace outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "greenspaces",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#b9dba4",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 0.1, 15, 0.3, 18, 0.6]
+        }
+      },
+      {
+        "id": "Woodland",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "woodland",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#d1f0ce",
+          "fill-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            6, 0.5, 12, 1]
+        }
+      },
+      {
+        "id": "Contour",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "contours",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#d6986b",
+          "line-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            9, 0.25, 12, 0.45, 13, 0.7],
+          "line-width": [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Normal"
+            ],
+            0.25, [
+              "Index"
+            ],
+            0.5, 0.2]
+        }
+      },
+      {
+        "id": "Surface water",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "surfacewater",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#d5eff8"
+        }
+      },
+      {
+        "id": "Surface water outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "surfacewater",
+        "minzoom": 12,
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, "#d5eff8",
+            13, "hsl(194, 64%, 78%)"
+          ]
+        }
+      },
+      {
+        "id": "Foreshore",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "foreshore",
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#f6f6d1"
+        }
+      },
+      {
+        "id": "Waterline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "waterlines",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#a4daeb",
+          "line-width": [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "National",
+              "Regional",
+              "District",
+              "Local"
+            ],
+            1, [
+              "MHW"
+            ],
+            1.2, [
+              "MLW"
+            ],
+            0.7, 1]
+        }
+      },
+      {
+        "id": "Building 2D",
+        "type": "fill",
+        "source": "composite",
+        "source-layer": "buildings",
+        "maxzoom": 14,
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-color": "#fadab4",
+          "fill-translate": [0, 0]
+        }
+      },
+      {
+        "id": "0 Local Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "hsl(0, 0%, 56%)",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 1.8, 14, 4.5, 15, 6, 16, 14, 18, 40, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [0],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Local"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 Minor Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "hsl(0, 0%, 56%)",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2, 12, 2.5, 14, 4.75, 15, 8, 16, 19, 18, 50, 22, 145]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [0],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Minor"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 B Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "hsl(0, 0%, 56%)",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2, 12, 2.5, 14, 4.75, 15, 8, 16, 19, 18, 50, 22, 145]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [0],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "B Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 A Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "hsl(0, 0%, 56%)",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2, 12, 2.5, 14, 4.75, 15, 8, 16, 19, 18, 50, 22, 145]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [0],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "A Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 Primary Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "hsl(0, 0%, 56%)",
+          "line-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.4, 9, 1],
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2.25, 12, 2.75, 14, 5.5, 15, 9.5, 16, 20, 18, 53, 22, 150]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [0],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Primary"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 Motorway Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "hsl(0, 0%, 56%)",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2.25, 12, 2.75, 14, 5.5, 15, 9.5, 16, 20, 18, 53, 22, 150]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [0],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Motorway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 Restricted Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "hsl(0, 0%, 89%)",
+          "line-dasharray": [2, 0.5],
+          "line-opacity": 1,
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 1, 14, 2.5, 15, 4, 16, 7, 18, 24, 22, 85]
+        },
+        "filter": [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "level"
+            ],
+            0],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Restricted"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 Local Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ffffff",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 1.4, 14, 3.5, 15, 5, 16, 12, 18, 35, 22, 100]
+        },
+        "filter": [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "level"
+            ],
+            0],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Local"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 Guided Busway Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ffffff",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 5, 16, 12, 18, 35, 22, 100]
+        },
+        "filter": [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "level"
+            ],
+            0],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Guided Busway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 Guided Busway Centreline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#b2b2b2",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            8, 0.1, 10, 0.2, 12, 0.2, 14, 0.4, 15, 0.6, 16, 0.75, 18, 3, 22, 10]
+        },
+        "filter": [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "level"
+            ],
+            0],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Guided Busway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 Motorway",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#06b1ca",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.75, 10, 2, 12, 2.75, 14, 4.5, 15, 8, 16, 17, 18, 48, 22, 140]
+        },
+        "filter": [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "level"
+            ],
+            0],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Motorway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 Minor Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#fef2b4",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 6.5, 16, 15, 18, 44, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "level"
+            ],
+            0],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Minor"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 B Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ffc073",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 6.5, 16, 15, 18, 44, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "level"
+            ],
+            0],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "B Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 A Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ff889d",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 6.5, 16, 15, 18, 44, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "level"
+            ],
+            0],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "A Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "0 Primary Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#37c256",
+          "line-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.6, 9, 1],
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.5, 10, 1.75, 12, 2, 14, 4, 15, 7.5, 16, 16, 18, 46, 22, 130]
+        },
+        "filter": [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "level"
+            ],
+            0],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Primary"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 Local Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 1.8, 14, 4.5, 15, 6, 16, 14, 18, 40, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Local"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 Minor Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2, 12, 2.5, 14, 4.75, 15, 8, 16, 19, 18, 50, 22, 145]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Minor"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 B Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2, 12, 2.5, 14, 4.75, 15, 8, 16, 19, 18, 50, 22, 145]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "B Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 A Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2, 12, 2.5, 14, 4.75, 15, 8, 16, 19, 18, 50, 22, 145]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "A Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 Primary Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.4, 9, 1],
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2.25, 12, 2.75, 14, 5.5, 15, 9.5, 16, 20, 18, 53, 22, 150]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Primary"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 Motorway Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2.25, 12, 2.75, 14, 5.5, 15, 9.5, 16, 20, 18, 53, 22, 150]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Motorway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 Restricted Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#e2e2e2",
+          "line-dasharray": [2, 0.5],
+          "line-opacity": 1,
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 1, 14, 2.5, 15, 4, 16, 7, 18, 24, 22, 85]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Restricted"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 Local Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ffffff",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 1.4, 14, 3.5, 15, 5, 16, 12, 18, 35, 22, 100]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Local"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 Guided Busway Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ffffff",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 5, 16, 12, 18, 35, 22, 100]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Guided Busway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 Guided Busway Centreline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#b2b2b2",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            8, 0.1, 10, 0.2, 12, 0.2, 14, 0.4, 15, 0.6, 16, 0.75, 18, 3, 22, 10]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Guided Busway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 Motorway",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#06b1ca",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.75, 10, 2, 12, 2.75, 14, 4.5, 15, 8, 16, 17, 18, 48, 22, 140]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Motorway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 Minor Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#fef2b4",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 6.5, 16, 15, 18, 44, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Minor"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 B Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ffc073",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 6.5, 16, 15, 18, 44, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "B Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "1 A Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ff889d",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 6.5, 16, 15, 18, 44, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "A Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": " 1 Primary Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#37c256",
+          "line-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.6, 9, 1],
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.5, 10, 1.75, 12, 2, 14, 4, 15, 7.5, 16, 16, 18, 46, 22, 130]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [1],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Primary"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Local Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 1.8, 14, 4.5, 15, 6, 16, 14, 18, 40, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Local"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Minor Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2, 12, 2.5, 14, 4.75, 15, 8, 16, 19, 18, 50, 22, 145]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Minor"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 B Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2, 12, 2.5, 14, 4.75, 15, 8, 16, 19, 18, 50, 22, 145]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "B Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 A Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2, 12, 2.5, 14, 4.75, 15, 8, 16, 19, 18, 50, 22, 145]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "A Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Primary Road Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.4, 9, 1],
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2.25, 12, 2.75, 14, 5.5, 15, 9.5, 16, 20, 18, 53, 22, 150]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Primary"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Motorway Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#8f8f8f",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 2.25, 12, 2.75, 14, 5.5, 15, 9.5, 16, 20, 18, 53, 22, 150]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Motorway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Restricted Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#e2e2e2",
+          "line-dasharray": [2, 0.5],
+          "line-opacity": 1,
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 1, 14, 2.5, 15, 4, 16, 7, 18, 24, 22, 85]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Restricted"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Local Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ffffff",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 1.4, 14, 3.5, 15, 5, 16, 12, 18, 35, 22, 100]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Local"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Guided Busway Outline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ffffff",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 5, 16, 12, 18, 35, 22, 100]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Guided Busway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Guided Busway Centreline",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#b2b2b2",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            8, 0.1, 10, 0.2, 12, 0.2, 14, 0.4, 15, 0.6, 16, 0.75, 18, 3, 22, 10]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Guided Busway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Motorway",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#06b1ca",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.75, 10, 2, 12, 2.75, 14, 4.5, 15, 8, 16, 17, 18, 48, 22, 140]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Motorway"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Minor Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#fef2b4",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 6.5, 16, 15, 18, 44, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Minor"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 B Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ffc073",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 6.5, 16, 15, 18, 44, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "B Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 A Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#ff889d",
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.35, 10, 1.5, 12, 1.7, 14, 3.5, 15, 6.5, 16, 15, 18, 44, 22, 120]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "A Road"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "2 Primary Road",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#37c256",
+          "line-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.6, 9, 1],
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 0.5, 10, 1.75, 12, 2, 14, 4, 15, 7.5, 16, 16, 18, 46, 22, 130]
+        },
+        "filter": [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "level"
+            ],
+            [2],
+            true, false],
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Primary"
+            ],
+            true, false]
+        ]
+      },
+      {
+        "id": "Tunnel",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "roads",
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#4b4444",
+          "line-dasharray": [3, 2.5],
+          "line-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            9, 0.1, 14, 0.35],
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            9, 0.5, 17, 2]
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Tunnels"
+          ],
+          true, false]
+      },
+      {
+        "id": "Railway",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "rail",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#646464",
+          "line-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 0.2, 14, 1],
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, [
+              "match",
+              [
+                "get",
+                "type"
+              ],
+              [
+                "Multi Track"
+              ],
+              0.6, [
+                "Single Track"
+              ],
+              0.5, [
+                "Narrow Gauge"
+              ],
+              0.4, 1],
+            17, [
+              "match",
+              [
+                "get",
+                "type"
+              ],
+              [
+                "Multi Track"
+              ],
+              2, [
+                "Single Track"
+              ],
+              1.5, [
+                "Narrow Gauge"
+              ],
+              1, 1]
+          ]
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Tunnel"
+          ],
+          false, true]
+      },
+      {
+        "id": "Railway tunnel",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "rail",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "#646464",
+          "line-dasharray": [5, 3],
+          "line-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 0.2, 14, 0.6],
+          "line-width": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 0.6, 17, 1.5]
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Tunnel"
+          ],
+          true, false]
+      },
+      {
+        "id": "Building 3D",
+        "type": "fill-extrusion",
+        "source": "composite",
+        "source-layer": "buildings",
+        "minzoom": 14,
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "fill-extrusion-color": "#fadab4",
+          "fill-extrusion-height": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            14, 0, 15, 8]
+        }
+      },
+      {
+        "id": "glasgow-2011-imd-fill",
+        "type": "fill",
+        "source": "glasgow-2011-imd",
+        "paint": {
+            "fill-color": ["match", ["to-number", ["get", "uk_imd2019_SOA_decile"]], 
+            10, "#8084", 
+            9, "#8085", 
+            8, "#8086", 
+            7, "#8087", 
+            6, "#8088", 
+            5, "#8089", 
+            4, "#808a", 
+            3, "#808b", 
+            2, "#808c", 
+            1, "#808d",
+            "#000000"]
+        },
+        "layout": {
+            "visibility": "visible"
+        }
+      },
+      {
+        "id": "Border",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "boundaries",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "hsl(0, 0%, 77%)"
+        }
+      },
+      {
+        "id": "Electricity Transmission Line",
+        "type": "line",
+        "source": "composite",
+        "source-layer": "etl",
+        "layout": {
+          "line-join": "round",
+          "visibility": "visible"
+        },
+        "paint": {
+          "line-color": "hsl(0, 9%, 55%)",
+          "line-dasharray": [10, 5],
+          "line-opacity": 0.5
+        }
+      },
+      {
+        "id": "Road numbers",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "roads",
+        "minzoom": 10,
+        "layout": {
+          "symbol-placement": "line",
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "number"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-max-angle": 45,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 8, 15, 11, 22, 28]
+        },
+        "paint": {
+          "text-color": "#000000",
+          "text-halo-blur": 1,
+          "text-halo-color": "hsl(0, 0%, 100%)",
+          "text-halo-width": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Primary",
+            "Motorway"
+          ],
+          false, true]
+      },
+      {
+        "id": "Road labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "roads",
+        "minzoom": 10,
+        "layout": {
+          "symbol-placement": "line",
+          "symbol-spacing": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 25, 15, 97, 17, 250],
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-max-angle": 82,
+          "text-padding": 1,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 8, 15, 10, 22, 25]
+        },
+        "paint": {
+          "text-color": "#000000",
+          "text-halo-blur": 1,
+          "text-halo-color": "hsl(0, 0%, 100%)",
+          "text-halo-width": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Primary",
+            "Motorway"
+          ],
+          false, true]
+      },
+      {
+        "id": "Primary road numbers",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "roads",
+        "minzoom": 9,
+        "layout": {
+          "symbol-placement": "line",
+          "symbol-spacing": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            9, 50, 15, 250],
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "number"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Bold",
+            "Noto Sans Bold"
+          ],
+          "text-letter-spacing": 0.1,
+          "text-max-angle": 65,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            9, 8.5, 15, 12, 22, 28]
+        },
+        "paint": {
+          "text-color": "hsl(0, 0%, 100%)",
+          "text-halo-blur": 0,
+          "text-halo-color": "#37c256",
+          "text-halo-width": 1.25
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Primary"
+          ],
+          true, false]
+      },
+      {
+        "id": "Motorway numbers",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "roads",
+        "minzoom": 8,
+        "layout": {
+          "symbol-placement": "line",
+          "symbol-spacing": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            8, 50, 15, 250],
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "number"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Bold",
+            "Noto Sans Bold"
+          ],
+          "text-letter-spacing": 0.1,
+          "text-max-angle": 45,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            8, 8.5, 10, 9, 15, 12, 22, 28]
+        },
+        "paint": {
+          "text-color": "hsl(0, 0%, 100%)",
+          "text-halo-blur": 0,
+          "text-halo-color": "#06b1ca",
+          "text-halo-width": 1.25
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Motorway"
+          ],
+          true, false]
+      },
+      {
+        "id": "Contour labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "contours",
+        "minzoom": 11,
+        "layout": {
+          "symbol-placement": "line",
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "height"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-letter-spacing": 0.05,
+          "text-max-angle": 35,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 7.5, 15, 9.5, 22, 21]
+        },
+        "paint": {
+          "text-color": "#d7986c",
+          "text-halo-blur": 0.5,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1
+        }
+      },
+      {
+        "id": "Motorway junction numbers",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 13,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Bold",
+            "Noto Sans Bold"
+          ],
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            13, 11, 16, 16, 22, 30]
+        },
+        "paint": {
+          "text-color": "#ffffff",
+          "text-halo-color": "#000000",
+          "text-halo-width": 10
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Motorway Junctions"
+          ],
+          true, false]
+      },
+      {
+        "id": "Greenspace labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 13,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-line-height": 1,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            13, 9, 14, 11]
+        },
+        "paint": {
+          "text-color": "#44913b",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Greenspace"
+          ],
+          true, false]
+      },
+      {
+        "id": "Site labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 13,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-line-height": 1,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            13, 9, 14, 11]
+        },
+        "paint": {
+          "text-color": "#333333",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Sites"
+          ],
+          true, false]
+      },
+      {
+        "id": "Landform labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 5,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-line-height": 1,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            11, 9, 14, 11]
+        },
+        "paint": {
+          "text-color": "#333333",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Landform"
+          ],
+          true, false]
+      },
+      {
+        "id": "Landcover labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 5,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-line-height": 1,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            11, 9.5, 14, 12]
+        },
+        "paint": {
+          "text-color": "#333333",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Landcover"
+          ],
+          true, false]
+      },
+      {
+        "id": "Water labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 12,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Italic",
+            "Noto Sans Italic"
+          ],
+          "text-line-height": 1,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            11, 9, 14, 11]
+        },
+        "paint": {
+          "text-color": "#1ca5d4",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Water"
+          ],
+          true, false]
+      },
+      {
+        "id": "Woodland labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 5,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-line-height": 1,
+          "text-padding": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            14, 10, 16, 2],
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            11, 9.5, 14, 11.5]
+        },
+        "paint": {
+          "text-color": "#44913b",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Woodland"
+          ],
+          true, false]
+      },
+      {
+        "id": "Small settlement labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 5,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-line-height": 1,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 9, 14, 11]
+        },
+        "paint": {
+          "text-color": "#333333",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Small Settlements"
+          ],
+          true, false]
+      },
+      {
+        "id": "Suburban area labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 10,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-line-height": 1,
+          "text-padding": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 10, 14, 2],
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 10.5, 14, 14]
+        },
+        "paint": {
+          "text-color": "#333333",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1,
+          "text-opacity": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 0.8, 14, 1]
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Suburban Area"
+          ],
+          true, false]
+      },
+      {
+        "id": "Railway station",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "railwaystations",
+        "layout": {
+          "icon-image": [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Railway Station"
+            ],
+            "RS-standard",
+            [
+              "London Underground Station"
+            ],
+            "UG-standard",
+            [
+              "Light Rapid Transit Station"
+            ],
+            "LRTS-standard",
+            [
+              "Light Rapid Transit Station And London Underground Station"
+            ],
+            "LRTS-UG-standard",
+            [
+              "Light Rapid Transit Station And Railway Station"
+            ],
+            "RS-LRTS-standard",
+            [
+              "Railway Station And London Underground Station"
+            ],
+            "RS-UG-standard",
+            ""
+          ],
+          "icon-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 0.5, 15, 1],
+          "text-anchor": "left",
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-justify": "left",
+          "text-line-height": 1,
+          "text-offset": [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "Railway Station"
+            ],
+            [
+              "literal",
+              [1, 0]
+            ],
+            [
+              "Light Rapid Transit Station"
+            ],
+            [
+              "literal",
+              [1, 0]
+            ],
+            [
+              "London Underground Station"
+            ],
+            [
+              "literal",
+              [1, 0]
+            ],
+            [
+              "Railway Station And London Underground Station"
+            ],
+            [
+              "literal",
+              [1.7, 0]
+            ],
+            [
+              "Light Rapid Transit Station And London Underground Station"
+            ],
+            [
+              "literal",
+              [1.5, 0]
+            ],
+            [
+              "Light Rapid Transit Station And Railway Station"
+            ],
+            [
+              "literal",
+              [1.7, 0]
+            ],
+            [
+              "literal",
+              [0, 0]
+            ]
+          ],
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            12, 9, 15, 13]
+        },
+        "paint": {
+          "text-halo-blur": 1,
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1
+        }
+      },
+      {
+        "id": "Airport labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "airports",
+        "layout": {
+          "icon-image": "Airport-standard",
+          "icon-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 0.8, 15, 1],
+          "text-anchor": "left",
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-justify": "left",
+          "text-offset": [0.8, 0],
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            10, 9, 15, 13]
+        },
+        "paint": {
+          "text-color": "#000000",
+          "text-halo-blur": 1,
+          "text-halo-color": "hsl(0, 0%, 100%)",
+          "text-halo-width": 1
+        }
+      },
+      {
+        "id": "Village and hamlet labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 5,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-line-height": 1,
+          "text-padding": 2,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            9, 9, 14, 15]
+        },
+        "paint": {
+          "text-color": "#000000",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1,
+          "text-opacity": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Village",
+            "Hamlet"
+          ],
+          true, false]
+      },
+      {
+        "id": "Town labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 5,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Regular",
+            "Noto Sans Regular"
+          ],
+          "text-line-height": 1,
+          "text-padding": 2,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            7, 10, 14, 18]
+        },
+        "paint": {
+          "text-color": "#000000",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1,
+          "text-opacity": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Town"
+          ],
+          true, false]
+      },
+      {
+        "id": "City labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 5,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Semi Bold",
+            "Noto Sans Semi Bold"
+          ],
+          "text-letter-spacing": 0.05,
+          "text-line-height": 1,
+          "text-padding": 2,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            6, 10, 14, 20]
+        },
+        "paint": {
+          "text-color": "#000000",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1,
+          "text-opacity": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "City"
+          ],
+          true, false]
+      },
+      {
+        "id": "National park labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 5,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Semi Bold",
+            "Noto Sans Semi Bold"
+          ],
+          "text-letter-spacing": 0.06,
+          "text-line-height": 1,
+          "text-padding": 2,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            6, 8, 14, 15]
+        },
+        "paint": {
+          "text-color": "#44913b",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1,
+          "text-opacity": 0.8
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "National Park"
+          ],
+          true, false]
+      },
+      {
+        "id": "Capital city labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 5,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Bold",
+            "Noto Sans Bold"
+          ],
+          "text-letter-spacing": 0.1,
+          "text-line-height": 1,
+          "text-padding": 2,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 10.5, 14, 22],
+          "text-transform": "uppercase"
+        },
+        "paint": {
+          "text-color": "#000000",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1,
+          "text-opacity": 1
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Capital"
+          ],
+          true, false]
+      },
+      {
+        "id": "Country labels",
+        "type": "symbol",
+        "source": "composite",
+        "source-layer": "names",
+        "minzoom": 5,
+        "maxzoom": 10,
+        "layout": {
+          "text-field": [
+            "to-string",
+            [
+              "get",
+              "name1"
+            ]
+          ],
+          "text-font": [
+            "Source Sans Pro Semi Bold",
+            "Noto Sans Semi Bold"
+          ],
+          "text-letter-spacing": 0.3,
+          "text-line-height": 1,
+          "text-padding": 2,
+          "text-size": [
+            "interpolate",
+            [
+              "linear"
+            ],
+            [
+              "zoom"
+            ],
+            5, 18, 10, 35],
+          "text-transform": "uppercase"
+        },
+        "paint": {
+          "text-color": "#000000",
+          "text-halo-blur": 1,
+          "text-halo-color": "#fafaf3",
+          "text-halo-width": 1,
+          "text-opacity": 0.45
+        },
+        "filter": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          [
+            "Country"
+          ],
+          true, false]
+      }
+    ],
+    "metadata": {
+      "maptiler": {
+        "copyright": "You are licensed to use the style or its derivate for serving map tiles exclusively with MapTiler Server or MapTiler Cloud and in accordance with their licenses and terms. If you plan to use the style in a different way, contact us at sales@maptiler.com.",
+        "groups": [
+          {
+            "icon": "poi",
+            "id": "poi",
+            "layers": [
+              "Site labels",
+              "Railway station"
+            ],
+            "name": "POI"
+          },
+          {
+            "icon": "administrative",
+            "id": "administrative",
+            "layers": [
+              "Border",
+              "Small settlement labels",
+              "Suburban area labels",
+              "Village and hamlet labels",
+              "Town labels",
+              "City labels",
+              "Capital city labels",
+              "Country labels"
+            ],
+            "name": "Administrative"
+          },
+          {
+            "icon": "built-up",
+            "id": "built-up",
+            "layers": [
+              "Building 2D",
+              "Greenspace",
+              "Medical care",
+              "Urban area",
+              "Building 3D",
+              "Electricity Transmission Line",
+              "Air transport",
+              "Education",
+              "Other sites",
+              "Road transport",
+              "Water transport",
+              "Airport labels"
+            ],
+            "name": "Built-up"
+          },
+          {
+            "icon": "transport",
+            "id": "transport",
+            "layers": [
+              "Railway tunnel",
+              "Railway",
+              "Tunnel",
+              "2 Primary Road",
+              "2 A Road",
+              "2 B Road",
+              "2 Minor Road",
+              "2 Motorway",
+              "2 Guided Busway Centreline",
+              "2 Guided Busway Outline",
+              "2 Local Road",
+              "2 Restricted Road",
+              "2 Motorway Outline",
+              "2 Primary Road Outline",
+              "2 A Road Outline",
+              "2 B Road Outline",
+              "2 Minor Road Outline",
+              "2 Local Road Outline",
+              " 1 Primary Road",
+              "1 A Road",
+              "1 B Road",
+              "1 Minor Road",
+              "1 Motorway",
+              "1 Guided Busway Centreline",
+              "1 Guided Busway Outline",
+              "1 Local Road",
+              "1 Restricted Road",
+              "1 Motorway Outline",
+              "1 Primary Road Outline",
+              "1 A Road Outline",
+              "1 B Road Outline",
+              "1 Minor Road Outline",
+              "1 Local Road Outline",
+              "0 Primary Road",
+              "0 A Road",
+              "0 B Road",
+              "0 Minor Road",
+              "0 Motorway",
+              "0 Guided Busway Centreline",
+              "0 Guided Busway Outline",
+              "0 Local Road",
+              "0 Restricted Road",
+              "0 Motorway Outline",
+              "0 Primary Road Outline",
+              "0 A Road Outline",
+              "0 B Road Outline",
+              "0 Minor Road Outline",
+              "0 Local Road Outline",
+              "Road numbers",
+              "Road labels",
+              "Primary road numbers",
+              "Motorway numbers",
+              "Motorway junction numbers"
+            ],
+            "name": "Transport"
+          },
+          {
+            "icon": "water",
+            "id": "water",
+            "layers": [
+              "Sea",
+              "Surface water",
+              "Surface water outline",
+              "Waterline",
+              "Water labels"
+            ],
+            "name": "Water"
+          },
+          {
+            "icon": "nature",
+            "id": "nature",
+            "layers": [
+              "National park",
+              "Greenspace outline",
+              "Woodland",
+              "Foreshore",
+              "Greenspace labels",
+              "Landform labels",
+              "Landcover labels",
+              "Woodland labels",
+              "National park labels"
+            ],
+            "name": "Nature"
+          },
+          {
+            "icon": "terrain",
+            "id": "terrain",
+            "layers": [
+              "Contour",
+              "Contour labels"
+            ],
+            "name": "Terrain"
+          },
+          {
+            "icon": "background",
+            "id": "background",
+            "layers": [
+              "Background"
+            ],
+            "name": "Background"
+          }
+        ]
+      }
+    },
+    "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=tm1vrxNic5cwBrZ5W0zx",
+    "sprite": "https://api.maptiler.com/maps/uk-openzoomstack-road/sprite",
+    "bearing": 0,
+    "pitch": 0,
+    "center": [-1.442, 52.089],
+    "zoom": 6.54,
+    "light": {
+      "color": "hsl(0, 0%, 100%)",
+      "intensity": 0.25
+    }
+  }
