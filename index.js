@@ -1,4 +1,4 @@
-import createControl from './createControl.js';
+import createControl from './components/createControl.js';
 
 const DEFAULT_PLACEMENT = 'top-left';
 const mapControlState = new WeakMap();
