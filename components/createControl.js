@@ -1,10 +1,40 @@
 import { ICON_PATH_D, GRID_ICON_PATH_D, MAP_ICON_PATH_D, SPEAKER_ICON_PATH_D } from './icons.js';
-import { normalizeLayerConfig, ensureControlStyles, setMouseInteractionEnabled, createIcon } from './helpers.js';
+import {
+  normalizeLayerConfig,
+  ensureControlStyles,
+  setMouseInteractionEnabled,
+  createIcon,
+  clampSpeechSynthesisRate
+} from './helpers.js';
 import { createKeyboardGridMode } from './keyboardGrid.js';
 import { createAccessibleStyleMode } from './a11yStyle.js';
 import { createMouseSpeakerMode } from './mouseSpeaker.js';
 
 const DEFAULT_CELL_SIZE = 48;
+const SPEECH_RATE_SLIDER_MIN = 0.5;
+const SPEECH_RATE_SLIDER_MAX = 2;
+const SPEECH_RATE_SLIDER_STEP = 0.1;
+
+let speechRateControlIdCounter = 0;
+
+function clampSpeechRateToSlider(rate) {
+  const n = Number(rate);
+  if (!Number.isFinite(n)) {
+    return 1;
+  }
+  return Math.min(SPEECH_RATE_SLIDER_MAX, Math.max(SPEECH_RATE_SLIDER_MIN, n));
+}
+
+function speechRateAriaValueText(rate) {
+  const rounded = Math.round(rate * 10) / 10;
+  if (Math.abs(rounded - 1) < 0.001) {
+    return '1, normal speaking rate';
+  }
+  if (rounded < 1) {
+    return `${rounded}, slower than normal`;
+  }
+  return `${rounded}, faster than normal`;
+}
 
 export default function createControl(map, options = {}) {
   const cellSize = Math.max(8, Number(options.cellSize) || DEFAULT_CELL_SIZE);
@@ -16,6 +46,7 @@ export default function createControl(map, options = {}) {
   const speechEnabled = options.speechEnabled !== false;
   const layerAliases = options.layerAliases && typeof options.layerAliases === 'object' ? options.layerAliases : {};
   const propertyAliases = options.propertyAliases && typeof options.propertyAliases === 'object' ? options.propertyAliases : {};
+  let speechRate = clampSpeechRateToSlider(options.defaultSpeechRate);
 
   let controlContainer;
   let controlButton;
@@ -23,6 +54,9 @@ export default function createControl(map, options = {}) {
   let gridModeButton;
   let styleModeButton;
   let audioModeButton;
+  let modeButtonsRow;
+  let speechRateInput;
+  let speechRateInputHandler;
   let activeMode = 'off';
   let isPanelOpen = false;
   let keyboardHelpElement;
@@ -36,12 +70,14 @@ export default function createControl(map, options = {}) {
     layerProperties,
     layerAliases,
     propertyAliases,
+    speechEnabled,
     cellSize,
     showGridBorder,
     borderColor,
     borderWidth,
     announceKeyboardHelp,
     announce,
+    getSpeechRate: () => clampSpeechSynthesisRate(speechRate),
     getControlButton: () => controlButton,
     getKeyboardHelpElement: () => keyboardHelpElement,
     getKeyboardHelpElementId: () => keyboardHelpElementId,
@@ -61,6 +97,7 @@ export default function createControl(map, options = {}) {
     layerAliases,
     propertyAliases,
     speechEnabled,
+    getSpeechRate: () => clampSpeechSynthesisRate(speechRate),
     announce
   });
 
@@ -86,8 +123,6 @@ export default function createControl(map, options = {}) {
       srAnnouncementElement.textContent = message;
     });
   }
-
-  
 
   function closeModePanel() {
     if (!modePanel || !controlButton) {
@@ -209,9 +244,54 @@ export default function createControl(map, options = {}) {
       audioModeButton.appendChild(createIcon(SPEAKER_ICON_PATH_D));
       audioModeButton.addEventListener('click', () => setMode('audioExplore'));
 
-      modePanel.appendChild(gridModeButton);
-      modePanel.appendChild(styleModeButton);
-      modePanel.appendChild(audioModeButton);
+      modeButtonsRow = document.createElement('div');
+      modeButtonsRow.className = 'maplibre-gl-a11y-mode-panel-buttons';
+      modeButtonsRow.appendChild(gridModeButton);
+      modeButtonsRow.appendChild(styleModeButton);
+      modeButtonsRow.appendChild(audioModeButton);
+      modePanel.appendChild(modeButtonsRow);
+
+      const speechRateFieldId = `maplibre-gl-a11y-speech-rate-${++speechRateControlIdCounter}`;
+      const speechRateDescriptionId = `${speechRateFieldId}-description`;
+
+      const speechRateRow = document.createElement('div');
+      speechRateRow.className = 'maplibre-gl-a11y-speech-rate';
+
+      const speechRateDescription = document.createElement('span');
+      speechRateDescription.id = speechRateDescriptionId;
+      speechRateDescription.className = 'maplibre-gl-a11y-sr-only';
+      speechRateDescription.textContent =
+        'Controls how fast the browser speaks map feature descriptions. Use arrow keys to adjust when focused.';
+
+      const speechRateLabel = document.createElement('label');
+      speechRateLabel.className = 'maplibre-gl-a11y-speech-rate-label';
+      speechRateLabel.setAttribute('for', speechRateFieldId);
+      speechRateLabel.textContent = 'Speech rate';
+
+      speechRateInput = document.createElement('input');
+      speechRateInput.type = 'range';
+      speechRateInput.id = speechRateFieldId;
+      speechRateInput.className = 'maplibre-gl-a11y-speech-rate-input';
+      speechRateInput.min = String(SPEECH_RATE_SLIDER_MIN);
+      speechRateInput.max = String(SPEECH_RATE_SLIDER_MAX);
+      speechRateInput.step = String(SPEECH_RATE_SLIDER_STEP);
+      speechRateInput.value = String(speechRate);
+      speechRateInput.title = 'Spoken description speed. 0.5 is slower, 2 is faster, 1 is default.';
+      speechRateInput.setAttribute('aria-describedby', speechRateDescriptionId);
+      speechRateInput.setAttribute('aria-valuetext', speechRateAriaValueText(speechRate));
+
+      speechRateInputHandler = () => {
+        speechRate = clampSpeechRateToSlider(Number(speechRateInput.value));
+        speechRateInput.value = String(speechRate);
+        speechRateInput.setAttribute('aria-valuetext', speechRateAriaValueText(speechRate));
+      };
+      speechRateInput.addEventListener('input', speechRateInputHandler);
+
+      speechRateRow.appendChild(speechRateDescription);
+      speechRateRow.appendChild(speechRateLabel);
+      speechRateRow.appendChild(speechRateInput);
+      modePanel.appendChild(speechRateRow);
+
       controlContainer.appendChild(modePanel);
 
       keyboardHelpElement = document.createElement('div');
@@ -222,6 +302,7 @@ export default function createControl(map, options = {}) {
       keyboardHelpElement.innerHTML = `
         <strong>Keyboard controls</strong>
         <div>Arrows: move cell (or pan map at edge)</div>
+        <div>Space: read features in inspection square aloud</div>
         <div>Home/End: jump row start/end</div>
         <div>c: center map on selected cell</div>
         <div>z: zoom in, Shift+z: zoom out</div>
@@ -249,9 +330,15 @@ export default function createControl(map, options = {}) {
       controlContainer = undefined;
       controlButton = undefined;
       modePanel = undefined;
+      if (speechRateInput && speechRateInputHandler) {
+        speechRateInput.removeEventListener('input', speechRateInputHandler);
+      }
       gridModeButton = undefined;
       styleModeButton = undefined;
       audioModeButton = undefined;
+      modeButtonsRow = undefined;
+      speechRateInput = undefined;
+      speechRateInputHandler = undefined;
       keyboardHelpElement = undefined;
       keyboardHelpElementId = undefined;
       srAnnouncementElement = undefined;

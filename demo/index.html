@@ -12,6 +12,19 @@
   </head>
   <body>
     <div id="map"></div>
+    <aside
+      id="imd-legend"
+      class="imd-legend"
+      aria-label="Choropleth legend for neighbourhood deprivation deciles"
+    >
+      <h2 class="imd-legend-heading">2011 Index of Multiple Deprivation (IMD) Decile</h2>
+      <p class="imd-legend-lead">
+        Each area is shaded by neighbourhood-level decile (1 = most deprived, 10 = least deprived).
+      </p>
+      <p id="imd-legend-scheme-note" class="imd-legend-scheme-note" aria-live="polite"></p>
+      <ol id="imd-legend-swatches" class="imd-legend-swatches" aria-label="Decile 1 through 10"></ol>
+    </aside>
+    <div id="a11y-demo-callout-live" class="a11y-demo-callout-live" aria-live="polite" aria-atomic="true"></div>
     <script type="module" src="./main.js"></script>
   </body>
 </html>

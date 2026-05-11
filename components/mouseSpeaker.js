@@ -1,4 +1,4 @@
-import { dedupeFeatures, buildFeatureSummary, getLayerDisplayName } from './helpers.js';
+import { dedupeFeatures, buildFeatureSummary, getLayerDisplayName, buildInspectionBoxAnnouncement, speak } from './helpers.js';
 
 const HOVER_ANNOUNCE_DEBOUNCE_MS = 700;
 const AUDIO_INSPECTION_BOX_SIZE = 44;
@@ -10,6 +10,7 @@ export function createMouseSpeakerMode({
     layerAliases,
     propertyAliases,
     speechEnabled,
+    getSpeechRate,
     announce
 }) {
     let audioHoverTimeout;
@@ -47,24 +48,7 @@ export function createMouseSpeakerMode({
         return `${featureText.join('; ')}${suffix}`;
     }
 
-    function buildInspectionBoxAnnouncement(features) {
-        if (!features || features.length === 0) {
-            return 'No features inside the inspection square.';
-        }
-        const details = features.map((feature, index) => {
-            const layerName = getLayerDisplayName(feature.layer?.id || '', layerAliases);
-            return `Feature ${index + 1} in ${layerName}: ${buildFeatureSummary(feature, layerProperties, propertyAliases)}`;
-        });
-        return `${features.length} features in inspection square. ${details.join('; ')}`;
-    }
-
-    function speak(message) {
-        if (!speechEnabled || typeof window === 'undefined' || typeof window.SpeechSynthesisUtterance !== 'function') {
-            return;
-        }
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(message));
-    }
+    
 
     function updateMagnifierPosition(point) {
         if (!magnifierElement) {
@@ -108,9 +92,9 @@ export function createMouseSpeakerMode({
 
     function handleAudioPointerClick(event) {
         const features = queryFeaturesInInspectionBox(event.point);
-        const message = buildInspectionBoxAnnouncement(features);
+        const message = buildInspectionBoxAnnouncement(features, layerAliases, layerProperties, propertyAliases);
         announce(message, true);
-        speak(message);
+        speak(message, speechEnabled, getSpeechRate());
     }
 
     function activate() {
@@ -120,7 +104,7 @@ export function createMouseSpeakerMode({
         map.on('mousemove', handleAudioPointerMove);
         map.on('click', handleAudioPointerClick);
         announce('Explore the map with the mouse and click to read features within the red square', true);
-        speak('Explore the map with the mouse and click to read features within the red square');
+        speak('Explore the map with the mouse and click to read features within the red square', speechEnabled, getSpeechRate());
     }
 
     function deactivate() {

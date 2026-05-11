@@ -4,7 +4,9 @@ import {
     getFeaturePropertiesForLayer,
     getLayerDisplayName,
     getPropertyDisplayName,
-    buildFeatureSummary
+    buildFeatureSummary,
+    buildInspectionBoxAnnouncement,
+    speak
 } from './helpers.js';
 
 export function createKeyboardGridMode({
@@ -13,6 +15,8 @@ export function createKeyboardGridMode({
     layerProperties,
     layerAliases,
     propertyAliases,
+    speechEnabled,
+    getSpeechRate,
     cellSize,
     showGridBorder,
     borderColor,
@@ -163,11 +167,34 @@ export function createKeyboardGridMode({
         });
     }
 
+    function queryFeaturesInInspectionBox(point) {
+        const queryOptions = targetLayers.length > 0 ? { layers: targetLayers } : undefined;
+        const halfSize = cellSize / 2;
+        const bbox = [
+            [point.x - halfSize, point.y - halfSize],
+            [point.x + halfSize, point.y + halfSize]
+        ];
+        const features = map.queryRenderedFeatures(bbox, queryOptions);
+        return dedupeFeatures(features);
+    }
+
     function handleGridKeyDownForCell(cell, event) {
         const key = event.key;
         const isKeyZ = event.code === 'KeyZ';
         const isShiftZ = isKeyZ && event.shiftKey;
         const isZoomInZ = isKeyZ && !event.shiftKey;
+        const isSpace = event.code === 'Space';
+        if (isSpace) {
+            event.preventDefault();
+            event.stopPropagation();
+            const selectedCell = getCellAt(cell.row, cell.col);
+            const x = (selectedCell.bbox[0][0] + selectedCell.bbox[1][0]) / 2;
+            const y = (selectedCell.bbox[0][1] + selectedCell.bbox[1][1]) / 2;
+            const features = queryFeaturesInInspectionBox({x, y});
+            const message = buildInspectionBoxAnnouncement(features, layerAliases, layerProperties, propertyAliases);
+            speak(message, speechEnabled, getSpeechRate());
+            return;
+        }
         if (key === 'h' || key === 'H') {
             event.preventDefault();
             event.stopPropagation();
@@ -205,6 +232,7 @@ export function createKeyboardGridMode({
         }
 
         let targetCell;
+        
         switch (key) {
             case 'ArrowUp':
                 targetCell = getCellAt(cell.row - 1, cell.col);
@@ -432,6 +460,8 @@ export function createKeyboardGridMode({
                 'Home',
                 'End',
                 'Escape',
+                'Space',
+                'Spacebar',
                 'h',
                 'H',
                 'c',

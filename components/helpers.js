@@ -174,6 +174,35 @@ function buildFeatureSummary(feature, layerProperties, propertyAliases) {
         .join(', ');
 }
 
+function buildInspectionBoxAnnouncement(features, layerAliases, layerProperties, propertyAliases) {
+    if (!features || features.length === 0) {
+        return 'No features found.';
+    }
+    const details = features.map((feature, index) => {
+        const layerName = getLayerDisplayName(feature.layer?.id || '', layerAliases);
+        return `Feature ${index + 1} in ${layerName}: ${buildFeatureSummary(feature, layerProperties, propertyAliases)}`;
+    });
+    return `${features.length} features. ${details.join('; ')}`;
+}
+
+function clampSpeechSynthesisRate(rate) {
+    const n = Number(rate);
+    if (!Number.isFinite(n)) {
+        return 1;
+    }
+    return Math.min(10, Math.max(0.1, n));
+}
+
+function speak(message, speechEnabled, rate = 1) {
+    if (!speechEnabled || typeof window === 'undefined' || typeof window.SpeechSynthesisUtterance !== 'function') {
+        return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new window.SpeechSynthesisUtterance(message);
+    utterance.rate = clampSpeechSynthesisRate(rate);
+    window.speechSynthesis.speak(utterance);
+}
+
 export {
     getFeatureLabel,
     normalizeLayerConfig,
@@ -184,5 +213,8 @@ export {
     getFeaturePropertiesForLayer,
     getLayerDisplayName,
     getPropertyDisplayName,
-    buildFeatureSummary
+    buildFeatureSummary,
+    buildInspectionBoxAnnouncement,
+    clampSpeechSynthesisRate,
+    speak
 };

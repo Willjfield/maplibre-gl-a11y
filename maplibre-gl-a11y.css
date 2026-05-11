@@ -21,13 +21,45 @@
   top: 0;
   left: calc(100% + 8px);
   display: flex;
-  gap: 6px;
+  flex-direction: column;
+  gap: 8px;
   padding: 6px;
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.15);
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   z-index: 110;
+  min-width: 120px;
+}
+
+.maplibre-gl-a11y-mode-panel-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.maplibre-gl-a11y-speech-rate {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.maplibre-gl-a11y-speech-rate-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #222;
+  cursor: pointer;
+}
+
+.maplibre-gl-a11y-speech-rate-input {
+  width: 100%;
+  min-width: 100px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.maplibre-gl-a11y-speech-rate-input:focus-visible {
+  outline: 2px solid #3887be;
+  outline-offset: 2px;
 }
 
 .maplibre-gl-a11y-mode-panel-hidden {
@@ -184,7 +216,8 @@
   display: none;
 }
 
-.maplibre-gl-a11y-sr-announcer {
+.maplibre-gl-a11y-sr-announcer,
+.maplibre-gl-a11y-sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -250,6 +283,10 @@
 
   .maplibre-gl-a11y-mode-button:hover {
     background: rgba(131, 198, 255, 0.22);
+  }
+
+  .maplibre-gl-a11y-speech-rate-label {
+    color: #f5f7fa;
   }
 
   .maplibre-gl-a11y-magnifier {
