@@ -11,43 +11,6 @@ body {
   position: relative;
 }
 
-.demo-repo-link {
-  position: absolute;
-  z-index: 20;
-  top: 12px;
-  right: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  background: rgba(255, 255, 255, 0.94);
-  color: #1a1a1a;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1;
-  text-decoration: none;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-}
-
-.demo-repo-link:hover {
-  background: #ffffff;
-  color: #0d4a6e;
-}
-
-.demo-repo-link:focus-visible {
-  outline: 2px solid #3887be;
-  outline-offset: 2px;
-}
-
-.demo-repo-link-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
 .imd-legend {
   position: absolute;
   z-index: 10;
@@ -172,17 +135,6 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .demo-repo-link {
-    background: rgba(22, 26, 32, 0.92);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #f0f4f8;
-  }
-
-  .demo-repo-link:hover {
-    background: rgba(32, 38, 46, 0.96);
-    color: #b8ddff;
-  }
-
   .imd-legend {
     background: rgba(22, 26, 32, 0.92);
     border-color: rgba(255, 255, 255, 0.2);
@@ -219,3 +171,18 @@ body {
   }
 }
 
+.maplibregl-ctrl-top-right-link {
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 10px;
+  border-radius: 5px;
+  text-decoration: none;
+  color: #1a1a1a;
+  margin: 4px;
+}
+
+.maplibregl-ctrl-top-right{
+  right: 5px;
+  top: 10px;
+  pointer-events: all;
+}
