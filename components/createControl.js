@@ -203,7 +203,9 @@ export default function createControl(map, options = {}) {
       controlButton.setAttribute('aria-expanded', 'false');
       controlButton.setAttribute('aria-haspopup', 'true');
       controlButton.title = 'Open accessibility interaction modes';
-      controlButton.appendChild(createIcon(ICON_PATH_D, '0 0 1200 1200'));
+      const controlIcon = createIcon(ICON_PATH_D, '0 0 1200 1200');
+      controlIcon.classList.add('maplibre-gl-a11y-control-icon');
+      controlButton.appendChild(controlIcon);
       togglePanelHandler = () => {
         if (isPanelOpen) {
           closeModePanel();
