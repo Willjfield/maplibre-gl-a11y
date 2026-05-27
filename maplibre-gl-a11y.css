@@ -243,7 +243,7 @@
 
 @media (prefers-color-scheme: dark) {
   .maplibre-gl-a11y-control-icon {
-    filter: invert(1);
+    /* filter: invert(1); */
   }
 
   .maplibregl-ctrl-group .maplibre-gl-a11y-control-button:hover {
